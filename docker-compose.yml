@@ -1,0 +1,30 @@
+version: '3'
+
+services:
+  anvil:
+    container_name: anvil
+    entrypoint: ['anvil', '--host', '0.0.0.0', '--chain-id', '5'] # Important to use entrypoint - command will not work!!
+    image: ghcr.io/foundry-rs/foundry:latest
+    ports:
+      - 8545:8545
+
+  # hardhat:
+  #   container_name: hardhat
+  #   build:
+  #     dockerfile: docker.hardhat.node.Dockerfile
+  #     context: .
+  #   ports:
+  #     - 8546:8545
+  #   environment:
+  #     - MINING_ENABLED=true
+  #     - BLOCK_TIME=5000
+
+  deploy:
+    container_name: deploy
+    build:
+      dockerfile: docker.hardhat.deploy.Dockerfile
+      context: .
+    environment:
+      - RPC_URL=http://anvil:8545
+    depends_on:
+      - anvil
