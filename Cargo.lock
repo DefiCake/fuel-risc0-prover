@@ -5089,8 +5089,11 @@ dependencies = [
 name = "prover-core"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "fuel-crypto",
+ "fuel-storage",
  "fuel-tx",
+ "fuel-types",
  "fuel-vm",
 ]
 

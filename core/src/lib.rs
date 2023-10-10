@@ -1,6 +1,8 @@
 use fuel_vm::{storage::MemoryStorage, interpreter::Interpreter};
 use fuel_tx::Script;
 
+pub mod vm_database;
+
 
 pub fn initialize_interpreter() -> Interpreter<MemoryStorage, Script>  {
     let interpreter: Interpreter<MemoryStorage, Script> = Interpreter::with_memory_storage();

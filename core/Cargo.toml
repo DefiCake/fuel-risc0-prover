@@ -4,6 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+anyhow = { workspace = true }
 fuel-crypto = { workspace = true }
-fuel-tx = {workspace = true}
+fuel-storage = { workspace = true }
+fuel-tx = { workspace = true }
+fuel-types = { workspace = true }
 fuel-vm = { workspace = true }
