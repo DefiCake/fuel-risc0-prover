@@ -13,3 +13,4 @@ hex = { workspace = true }
 fuel-crypto = { workspace = true }
 fuel-tx = {workspace = true}
 fuel-vm = { workspace = true }
+prover-core = { workspace = true }

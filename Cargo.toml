@@ -3,6 +3,7 @@ members = [
     "host",
     "relay",
     "methods/guest",
+    "core"
 ]
 default-members = ["host", "relay"]
 
@@ -11,13 +12,14 @@ bonsai-sdk = { git = "https://github.com/risc0/risc0", branch = "release-0.17" }
 bonsai-ethereum-relay = { git = "https://github.com/risc0/risc0", branch = "release-0.17" }
 ethers = {version = "=2.0.8"}
 ethabi = "18.0.0"
-fuel-crypto = {path = "/Users/mad/fuel/vm/fuel-crypto",  default-features = false}
-fuel-tx = {path = "/Users/mad/fuel/vm/fuel-tx", default-features = false, features = ["builder"]}
-fuel-vm = {path = "/Users/mad/fuel/vm/fuel-vm",  default-features = false, features = ["serde", "alloc"]}
+fuel-crypto = { git = "https://github.com/DefiCake/fuel-vm", rev="1e44c68571def6deac1048de57ab083fd6e4fdda",  default-features = false}
+fuel-tx = { git = "https://github.com/DefiCake/fuel-vm", rev="1e44c68571def6deac1048de57ab083fd6e4fdda", default-features = false, features = ["builder"]}
+fuel-vm = { git = "https://github.com/DefiCake/fuel-vm", rev="1e44c68571def6deac1048de57ab083fd6e4fdda",  default-features = false, features = ["serde", "alloc"]}
 hex = "0.4.3"
 risc0-build = { git = "https://github.com/risc0/risc0", branch = "release-0.17" }
 risc0-zkvm = { git = "https://github.com/risc0/risc0", branch = "release-0.17", default-features = false }
 methods = { path = "./methods", package = "methods" }
+prover-core = { path = "./core" }
 serde = {version = "1.0.188", default-features = false}
 serde_json = "1.0.104"
 # Always optimize; building and running the guest takes much longer without optimization.

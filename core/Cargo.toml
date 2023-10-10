@@ -1,0 +1,9 @@
+[package]
+name = "prover-core"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+fuel-crypto = { workspace = true }
+fuel-tx = {workspace = true}
+fuel-vm = { workspace = true }
