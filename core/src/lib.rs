@@ -10,7 +10,7 @@ use database::Database;
 
 pub fn initialize_interpreter() -> Interpreter<VmDatabase, Script>  {
 
-    let _db: Database = Database{};
+    let _db: Database = Database::new();
 
     let vm_db: VmDatabase = VmDatabase { block_height: Default::default(), coinbase: Default::default() };
 

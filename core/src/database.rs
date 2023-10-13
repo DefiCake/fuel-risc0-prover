@@ -1,10 +1,8 @@
-
-pub struct Database {}
-
 use serde::{
     de::DeserializeOwned,
     Serialize,
 };
+use strum::EnumCount;
 
 type Error = anyhow::Error;
 type Result<T> = core::result::Result<T, Error>;
@@ -74,24 +72,24 @@ pub enum Column {
     ContractsStateMerkleMetadata = 24,
 }
 
-// impl Column {
-//     /// The total count of variants in the enum.
-//     pub const COUNT: usize = <Self as EnumCount>::COUNT;
+impl Column {
+    /// The total count of variants in the enum.
+    pub const COUNT: usize = <Self as EnumCount>::COUNT;
 
-//     /// Returns the `usize` representation of the `Column`.
-//     pub fn as_usize(&self) -> usize {
-//         *self as usize
-//     }
-// }
+    /// Returns the `usize` representation of the `Column`.
+    pub fn as_usize(&self) -> usize {
+        *self as usize
+    }
+}
 
-// #[derive(Clone, Debug)]
-// pub struct Database {}
+#[derive(Clone, Debug)]
+pub struct Database {}
 
-// impl Database {
-//     pub fn new(data_source: DataSource) -> Self {
-//         Self {}
-//     }
-// }
+impl Database {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
 
 // /// Mutable methods.
 // impl Database {
