@@ -1,11 +1,16 @@
-use fuel_vm::{storage::MemoryStorage, interpreter::Interpreter};
-use fuel_tx::Script;
-
 pub mod vm_database;
 
+use fuel_vm::interpreter::{Interpreter, InterpreterParams};
+use fuel_tx::Script;
+use vm_database::VmDatabase;
 
-pub fn initialize_interpreter() -> Interpreter<MemoryStorage, Script>  {
-    let interpreter: Interpreter<MemoryStorage, Script> = Interpreter::with_memory_storage();
+
+
+pub fn initialize_interpreter() -> Interpreter<VmDatabase, Script>  {
+
+    let db: VmDatabase = VmDatabase { block_height: Default::default(), coinbase: Default::default() };
+
+    let interpreter: Interpreter<VmDatabase, Script> = Interpreter::with_storage(db, InterpreterParams::default());
 
     interpreter   
 }
@@ -20,8 +25,8 @@ mod tests {
 
         let storage = interpreter.as_ref();
 
-        let contracts_count = storage.all_contract_state().count();
+        let block_height = storage.block_height;
 
-        assert_eq!(contracts_count, 0, "asdadsad");
+        assert_eq!(block_height, 0.into(), "Interpreter initialization failed");
     }
 }

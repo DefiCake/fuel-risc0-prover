@@ -10,5 +10,7 @@ node:
 	anvil --chain-id 5
 node-docker:
 	docker-compose up -d --no-recreate
+build:
+	cargo build
 test:
 	cargo +stable test -p prover-core 
