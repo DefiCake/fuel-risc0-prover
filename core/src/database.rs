@@ -1,14 +1,18 @@
+#![allow(unused, dead_code)]
+
 use serde::{
     de::DeserializeOwned,
     Serialize,
 };
+use fuel_storage::StorageError;
+
 use strum::EnumCount;
 
-type Error = anyhow::Error;
-type Result<T> = core::result::Result<T, Error>;
+pub use crate::fuel_core_database::Error;
+pub type Result<T> = core::result::Result<T, Error>;
 
-pub type DatabaseError = Error;
-pub type DatabaseResult<T> = Result<T>;
+type DatabaseError = Error;
+type DatabaseResult<T> = Result<T>;
 
 
 /// Database tables column ids to the corresponding [`fuel_core_storage::Mappable`] table.
@@ -91,140 +95,140 @@ impl Database {
     }
 }
 
-// /// Mutable methods.
-// impl Database {
-//     fn insert<K: AsRef<[u8]>, V: Serialize, R: DeserializeOwned>(
-//         &self,
-//         key: K,
-//         column: Column,
-//         value: &V,
-//     ) -> DatabaseResult<Option<R>> {
-//         unimplemented!()
-//     }
+/// Mutable methods.
+impl Database {
+    fn insert<K: AsRef<[u8]>, V: Serialize, R: DeserializeOwned>(
+        &self,
+        key: K,
+        column: Column,
+        value: &V,
+    ) -> DatabaseResult<Option<R>> {
+        unimplemented!()
+    }
 
-//     fn batch_insert<K: AsRef<[u8]>, V: Serialize, S>(
-//         &self,
-//         column: Column,
-//         set: S,
-//     ) -> DatabaseResult<()>
-//     where
-//         S: Iterator<Item = (K, V)>,
-//     {
-//         unimplemented!()
-//     }
+    fn batch_insert<K: AsRef<[u8]>, V: Serialize, S>(
+        &self,
+        column: Column,
+        set: S,
+    ) -> DatabaseResult<()>
+    where
+        S: Iterator<Item = (K, V)>,
+    {
+        unimplemented!()
+    }
 
-//     fn remove<V: DeserializeOwned>(
-//         &self,
-//         key: &[u8],
-//         column: Column,
-//     ) -> DatabaseResult<Option<V>> {
-//         unimplemented!()
-//     }
+    fn remove<V: DeserializeOwned>(
+        &self,
+        key: &[u8],
+        column: Column,
+    ) -> DatabaseResult<Option<V>> {
+        unimplemented!()
+    }
 
-//     fn write(&self, key: &[u8], column: Column, buf: &[u8]) -> DatabaseResult<usize> {
-//         unimplemented!()
-//     }
+    fn write(&self, key: &[u8], column: Column, buf: &[u8]) -> DatabaseResult<usize> {
+        unimplemented!()
+    }
 
-//     fn replace(
-//         &self,
-//         key: &[u8],
-//         column: Column,
-//         buf: &[u8],
-//     ) -> DatabaseResult<(usize, Option<Vec<u8>>)> {
-//         unimplemented!()
-//     }
+    fn replace(
+        &self,
+        key: &[u8],
+        column: Column,
+        buf: &[u8],
+    ) -> DatabaseResult<(usize, Option<Vec<u8>>)> {
+        unimplemented!()
+    }
 
-//     fn take(&self, key: &[u8], column: Column) -> DatabaseResult<Option<Vec<u8>>> {
-//         unimplemented!()
-//     }
-// }
+    fn take(&self, key: &[u8], column: Column) -> DatabaseResult<Option<Vec<u8>>> {
+        unimplemented!()
+    }
+}
 
-// /// Read-only methods.
-// impl Database {
-//     fn contains_key(&self, key: &[u8], column: Column) -> DatabaseResult<bool> {
-//         unimplemented!()
-//     }
+/// Read-only methods.
+impl Database {
+    fn contains_key(&self, key: &[u8], column: Column) -> DatabaseResult<bool> {
+        unimplemented!()
+    }
 
-//     fn size_of_value(&self, key: &[u8], column: Column) -> DatabaseResult<Option<usize>> {
-//         unimplemented!()
-//     }
+    fn size_of_value(&self, key: &[u8], column: Column) -> DatabaseResult<Option<usize>> {
+        unimplemented!()
+    }
 
-//     fn read(
-//         &self,
-//         key: &[u8],
-//         column: Column,
-//         buf: &mut [u8],
-//     ) -> DatabaseResult<Option<usize>> {
-//         unimplemented!()
-//     }
+    fn read(
+        &self,
+        key: &[u8],
+        column: Column,
+        buf: &mut [u8],
+    ) -> DatabaseResult<Option<usize>> {
+        unimplemented!()
+    }
 
-//     fn read_alloc(&self, key: &[u8], column: Column) -> DatabaseResult<Option<Vec<u8>>> {
-//         unimplemented!()
-//     }
+    fn read_alloc(&self, key: &[u8], column: Column) -> DatabaseResult<Option<Vec<u8>>> {
+        unimplemented!()
+    }
 
-//     fn get<V: DeserializeOwned>(
-//         &self,
-//         key: &[u8],
-//         column: Column,
-//     ) -> DatabaseResult<Option<V>> {
-//         unimplemented!()
-//     }
+    fn get<V: DeserializeOwned>(
+        &self,
+        key: &[u8],
+        column: Column,
+    ) -> DatabaseResult<Option<V>> {
+        unimplemented!()
+    }
 
-//     // fn iter_all<K, V>(
-//     //     &self,
-//     //     column: Column,
-//     //     direction: Option<IterDirection>,
-//     // ) -> impl Iterator<Item = DatabaseResult<(K, V)>> + '_
-//     // where
-//     //     K: From<Vec<u8>>,
-//     //     V: DeserializeOwned,
-//     // {
-//     //     unimplemented!()
-//     // }
+    // fn iter_all<K, V>(
+    //     &self,
+    //     column: Column,
+    //     direction: Option<IterDirection>,
+    // ) -> impl Iterator<Item = DatabaseResult<(K, V)>> + '_
+    // where
+    //     K: From<Vec<u8>>,
+    //     V: DeserializeOwned,
+    // {
+    //     unimplemented!()
+    // }
 
-//     // fn iter_all_by_prefix<K, V, P>(
-//     //     &self,
-//     //     column: Column,
-//     //     prefix: Option<P>,
-//     // ) -> impl Iterator<Item = DatabaseResult<(K, V)>> + '_
-//     // where
-//     //     K: From<Vec<u8>>,
-//     //     V: DeserializeOwned,
-//     //     P: AsRef<[u8]>,
-//     // {
-//     //     unimplemented!()
-//     // }
+    // fn iter_all_by_prefix<K, V, P>(
+    //     &self,
+    //     column: Column,
+    //     prefix: Option<P>,
+    // ) -> impl Iterator<Item = DatabaseResult<(K, V)>> + '_
+    // where
+    //     K: From<Vec<u8>>,
+    //     V: DeserializeOwned,
+    //     P: AsRef<[u8]>,
+    // {
+    //     unimplemented!()
+    // }
 
-//     // fn iter_all_by_start<K, V, S>(
-//     //     &self,
-//     //     column: Column,
-//     //     start: Option<S>,
-//     //     direction: Option<IterDirection>,
-//     // ) -> impl Iterator<Item = DatabaseResult<(K, V)>> + '_
-//     // where
-//     //     K: From<Vec<u8>>,
-//     //     V: DeserializeOwned,
-//     //     S: AsRef<[u8]>,
-//     // {
-//     //     unimplemented!()
-//     // }
+    // fn iter_all_by_start<K, V, S>(
+    //     &self,
+    //     column: Column,
+    //     start: Option<S>,
+    //     direction: Option<IterDirection>,
+    // ) -> impl Iterator<Item = DatabaseResult<(K, V)>> + '_
+    // where
+    //     K: From<Vec<u8>>,
+    //     V: DeserializeOwned,
+    //     S: AsRef<[u8]>,
+    // {
+    //     unimplemented!()
+    // }
 
-//     // fn iter_all_filtered<K, V, P, S>(
-//     //     &self,
-//     //     column: Column,
-//     //     prefix: Option<P>,
-//     //     start: Option<S>,
-//     //     direction: Option<IterDirection>,
-//     // ) -> impl Iterator<Item = DatabaseResult<(K, V)>> + '_
-//     // where
-//     //     K: From<Vec<u8>>,
-//     //     V: DeserializeOwned,
-//     //     P: AsRef<[u8]>,
-//     //     S: AsRef<[u8]>,
-//     // {
-//     //     unimplemented!()
-//     // }
-// }
+    // fn iter_all_filtered<K, V, P, S>(
+    //     &self,
+    //     column: Column,
+    //     prefix: Option<P>,
+    //     start: Option<S>,
+    //     direction: Option<IterDirection>,
+    // ) -> impl Iterator<Item = DatabaseResult<(K, V)>> + '_
+    // where
+    //     K: From<Vec<u8>>,
+    //     V: DeserializeOwned,
+    //     P: AsRef<[u8]>,
+    //     S: AsRef<[u8]>,
+    // {
+    //     unimplemented!()
+    // }
+}
 
 // impl AsRef<Database> for Database {
 //     fn as_ref(&self) -> &Database {

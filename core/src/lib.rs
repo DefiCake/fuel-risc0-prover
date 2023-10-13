@@ -1,5 +1,7 @@
 pub mod vm_database;
 pub mod database;
+pub mod fuel_core_storage;
+pub mod fuel_core_database;
 
 use fuel_vm::interpreter::{Interpreter, InterpreterParams};
 use fuel_tx::Script;
@@ -10,9 +12,9 @@ use database::Database;
 
 pub fn initialize_interpreter() -> Interpreter<VmDatabase, Script>  {
 
-    let _db: Database = Database::new();
+    let db: Database = Database::new();
 
-    let vm_db: VmDatabase = VmDatabase { block_height: Default::default(), coinbase: Default::default() };
+    let vm_db: VmDatabase = VmDatabase { block_height: Default::default(), coinbase: Default::default(), database: db };
 
     let interpreter: Interpreter<VmDatabase, Script> = Interpreter::with_storage(vm_db, InterpreterParams::default());
 

@@ -5,10 +5,13 @@ use fuel_types::{Address, BlockHeight, Word, ContractId, Bytes32, Salt};
 use fuel_vm::storage::{InterpreterStorage, ContractsAssetsStorage};
 use fuel_storage::{MerkleRoot, MerkleRootStorage, StorageError, Mappable, StorageMutate, StorageInspect, StorageSize, StorageRead};
 
+use crate::database::Database;
+
 #[derive(Clone, Debug)]
 pub struct VmDatabase {
     pub block_height: BlockHeight,
-    pub coinbase: Address
+    pub coinbase: Address,
+    pub database: Database
 }
 
 trait IncreaseStorageKey {
