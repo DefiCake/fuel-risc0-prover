@@ -12,6 +12,7 @@ resolver = "2"
 anyhow = "1.0.75"
 bonsai-sdk = { git = "https://github.com/risc0/risc0", branch = "release-0.17" }
 bonsai-ethereum-relay = { git = "https://github.com/risc0/risc0", branch = "release-0.17" }
+enum-iterator = "1.2"
 ethers = {version = "=2.0.8"}
 ethabi = "18.0.0"
 fuel-crypto = { git = "https://github.com/DefiCake/fuel-vm", rev="1e44c68571def6deac1048de57ab083fd6e4fdda",  default-features = false}
@@ -26,6 +27,9 @@ methods = { path = "./methods", package = "methods" }
 prover-core = { path = "./core" }
 serde = {version = "1.0.188", default-features = false}
 serde_json = "1.0.104"
+strum = "0.24"
+strum_macros = "0.24"
+
 # Always optimize; building and running the guest takes much longer without optimization.
 [profile.dev]
 opt-level = 3

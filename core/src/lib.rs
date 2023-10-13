@@ -1,16 +1,20 @@
 pub mod vm_database;
+pub mod database;
 
 use fuel_vm::interpreter::{Interpreter, InterpreterParams};
 use fuel_tx::Script;
 use vm_database::VmDatabase;
+use database::Database;
 
 
 
 pub fn initialize_interpreter() -> Interpreter<VmDatabase, Script>  {
 
-    let db: VmDatabase = VmDatabase { block_height: Default::default(), coinbase: Default::default() };
+    let _db: Database = Database{};
 
-    let interpreter: Interpreter<VmDatabase, Script> = Interpreter::with_storage(db, InterpreterParams::default());
+    let vm_db: VmDatabase = VmDatabase { block_height: Default::default(), coinbase: Default::default() };
+
+    let interpreter: Interpreter<VmDatabase, Script> = Interpreter::with_storage(vm_db, InterpreterParams::default());
 
     interpreter   
 }
@@ -29,4 +33,6 @@ mod tests {
 
         assert_eq!(block_height, 0.into(), "Interpreter initialization failed");
     }
+
+    
 }
