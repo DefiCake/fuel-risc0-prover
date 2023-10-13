@@ -11,5 +11,6 @@ fuel-storage = { workspace = true }
 fuel-tx = { workspace = true }
 fuel-types = { workspace = true }
 fuel-vm = { workspace = true }
+serde = { workspace = true }
 strum = { workspace = true }
 strum_macros = { workspace = true }

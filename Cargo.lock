@@ -5116,6 +5116,7 @@ dependencies = [
  "fuel-tx",
  "fuel-types",
  "fuel-vm",
+ "serde",
  "strum 0.24.1",
  "strum_macros 0.24.3",
 ]
