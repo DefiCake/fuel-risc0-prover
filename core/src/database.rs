@@ -2,6 +2,8 @@
 
 pub mod contracts;
 pub mod balances;
+pub mod state;
+pub mod storage;
 
 use serde::{
     de::DeserializeOwned,
