@@ -2,6 +2,7 @@ pub mod vm_database;
 pub mod database;
 pub mod fuel_core_storage;
 pub mod fuel_core_database;
+pub mod primitives;
 
 use fuel_vm::interpreter::{Interpreter, InterpreterParams};
 use fuel_tx::Script;

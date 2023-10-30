@@ -1,5 +1,20 @@
+use fuel_storage::Mappable;
+use fuel_types::BlockHeight;
+
 use crate::fuel_core_storage::{Error as StorageError, Result as StorageResult};
 use crate::database::{Database, Column};
+use crate::primitives::BlockId;
+
+pub struct FuelBlockSecondaryKeyBlockHeights;
+
+impl Mappable for FuelBlockSecondaryKeyBlockHeights {
+    /// Secondary key - `BlockHeight`.
+    type Key = BlockHeight;
+    type OwnedKey = Self::Key;
+    /// Primary key - `BlockId`.
+    type Value = BlockId;
+    type OwnedValue = Self::Value;
+}
 
 pub trait DatabaseColumn {
     /// The column of the table.
