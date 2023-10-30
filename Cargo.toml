@@ -12,6 +12,7 @@ resolver = "2"
 anyhow = "1.0.75"
 bonsai-sdk = { git = "https://github.com/risc0/risc0", branch = "release-0.17" }
 bonsai-ethereum-relay = { git = "https://github.com/risc0/risc0", branch = "release-0.17" }
+derive_more = { version = "0.99" }
 enum-iterator = "1.2"
 ethers = {version = "=2.0.8"}
 ethabi = "18.0.0"

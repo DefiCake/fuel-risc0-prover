@@ -1,5 +1,37 @@
+use derive_more::{
+    Add,
+    AsRef,
+    Deref,
+    Display,
+    From,
+    FromStr,
+    Into,
+    LowerHex,
+    Rem,
+    Sub,
+    UpperHex,
+};
+
 use fuel_types::Bytes32;
 
+#[derive(
+    Clone,
+    Copy,
+    Debug,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    Default,
+    FromStr,
+    From,
+    Into,
+    LowerHex,
+    UpperHex,
+    Display,
+    AsRef,
+)]
 pub struct BlockId(Bytes32);
 
 impl BlockId {

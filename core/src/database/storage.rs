@@ -4,6 +4,7 @@ use fuel_storage::{Mappable, MerkleRoot, StorageInspect, StorageMutate};
 use fuel_tx::TxId;
 use fuel_types::{BlockHeight, ContractId, Nonce};
 use fuel_vm::fuel_merkle::{binary, sparse};
+use fuel_vm::storage::ContractsInfo;
 use serde::Serialize;
 use serde::de::DeserializeOwned;
 
@@ -139,6 +140,12 @@ impl DatabaseColumn for ContractsStateMerkleMetadata {
     }
 }
 
+impl DatabaseColumn for ContractsInfo {
+    fn column() -> Column {
+        Column::ContractsInfo
+    }
+}
+
 impl<T> StorageInspect<T> for Database
 where
     T: Mappable + DatabaseColumn,
@@ -210,7 +217,8 @@ impl ToDatabaseKey for Nonce {
     type Type<'a> = &'a [u8; 32];
 
     fn database_key(&self) -> Self::Type<'_> {
-        self.deref()
+        // self.deref()
+        todo!()
     }
 }
 
@@ -218,7 +226,8 @@ impl ToDatabaseKey for ContractId {
     type Type<'a> = &'a [u8; 32];
 
     fn database_key(&self) -> Self::Type<'_> {
-        self.deref()
+        // self.deref()
+        todo!()
     }
 }
 
@@ -234,7 +243,8 @@ impl ToDatabaseKey for TxId {
     type Type<'a> = &'a [u8; 32];
 
     fn database_key(&self) -> Self::Type<'_> {
-        self.deref()
+        // self.deref()
+        todo!()
     }
 }
 
