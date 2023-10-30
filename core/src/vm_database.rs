@@ -123,15 +123,6 @@ where
     }
 }
 
-// impl<K, M: Mappable> MerkleRootStorage<K, M> for VmDatabase
-// where
-//     Database: MerkleRootStorage<K, M, Error = StorageError>,
-// {
-    // fn root(&self, key: &K) -> Result<MerkleRoot, Self::Error> {
-    //     MerkleRootStorage::<K, M>::root(&self.database, key)
-    // }
-// }
-
 impl MerkleRootStorage<ContractId, ContractsAssets> for VmDatabase
 {
     fn root(&self, key: &ContractId) -> Result<MerkleRoot, Self::Error> {

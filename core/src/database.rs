@@ -1,10 +1,12 @@
 #![allow(unused, dead_code)]
 
+pub mod contracts;
+pub mod balances;
+
 use serde::{
     de::DeserializeOwned,
     Serialize,
 };
-use fuel_storage::StorageError;
 
 use strum::EnumCount;
 
@@ -13,6 +15,7 @@ pub type Result<T> = core::result::Result<T, Error>;
 
 type DatabaseError = Error;
 type DatabaseResult<T> = Result<T>;
+
 
 
 /// Database tables column ids to the corresponding [`fuel_core_storage::Mappable`] table.
