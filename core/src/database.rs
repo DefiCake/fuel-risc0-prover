@@ -95,6 +95,12 @@ impl Database {
     }
 }
 
+impl Default for Database {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 /// Mutable methods.
 impl Database {
     fn insert<K: AsRef<[u8]>, V: Serialize, R: DeserializeOwned>(
@@ -173,101 +179,4 @@ impl Database {
     ) -> DatabaseResult<Option<V>> {
         unimplemented!()
     }
-
-    // fn iter_all<K, V>(
-    //     &self,
-    //     column: Column,
-    //     direction: Option<IterDirection>,
-    // ) -> impl Iterator<Item = DatabaseResult<(K, V)>> + '_
-    // where
-    //     K: From<Vec<u8>>,
-    //     V: DeserializeOwned,
-    // {
-    //     unimplemented!()
-    // }
-
-    // fn iter_all_by_prefix<K, V, P>(
-    //     &self,
-    //     column: Column,
-    //     prefix: Option<P>,
-    // ) -> impl Iterator<Item = DatabaseResult<(K, V)>> + '_
-    // where
-    //     K: From<Vec<u8>>,
-    //     V: DeserializeOwned,
-    //     P: AsRef<[u8]>,
-    // {
-    //     unimplemented!()
-    // }
-
-    // fn iter_all_by_start<K, V, S>(
-    //     &self,
-    //     column: Column,
-    //     start: Option<S>,
-    //     direction: Option<IterDirection>,
-    // ) -> impl Iterator<Item = DatabaseResult<(K, V)>> + '_
-    // where
-    //     K: From<Vec<u8>>,
-    //     V: DeserializeOwned,
-    //     S: AsRef<[u8]>,
-    // {
-    //     unimplemented!()
-    // }
-
-    // fn iter_all_filtered<K, V, P, S>(
-    //     &self,
-    //     column: Column,
-    //     prefix: Option<P>,
-    //     start: Option<S>,
-    //     direction: Option<IterDirection>,
-    // ) -> impl Iterator<Item = DatabaseResult<(K, V)>> + '_
-    // where
-    //     K: From<Vec<u8>>,
-    //     V: DeserializeOwned,
-    //     P: AsRef<[u8]>,
-    //     S: AsRef<[u8]>,
-    // {
-    //     unimplemented!()
-    // }
 }
-
-// impl AsRef<Database> for Database {
-//     fn as_ref(&self) -> &Database {
-//         self
-//     }
-// }
-
-// /// Construct an ephemeral database
-// impl Default for Database {
-//     fn default() -> Self {
-//         Self {}
-//     }
-// }
-
-// /// Implement `ChainConfigDb` so that `Database` can be passed to
-// /// `StateConfig's` `generate_state_config()` method
-// // impl ChainConfigDb for Database {
-// //     fn get_coin_config(&self) -> Result<Option<Vec<CoinConfig>>> {
-// //         unimplemented!()
-// //     }
-
-// //     fn get_contract_config(&self) -> Result<Option<Vec<ContractConfig>>> {
-// //         unimplemented!()
-// //     }
-
-// //     fn get_message_config(&self) -> Result<Option<Vec<MessageConfig>>> {
-// //         unimplemented!()
-// //     }
-
-// //     fn get_block_height(&self) -> Result<BlockHeight> {
-// //         unimplemented!()
-// //     }
-// // }
-
-
-// #[test]
-// fn column_keys_not_exceed_count() {
-//     use enum_iterator::all;
-//     for column in all::<Column>() {
-//         assert!(column.as_usize() < Column::COUNT);
-//     }
-// }

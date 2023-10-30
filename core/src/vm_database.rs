@@ -1,16 +1,18 @@
 use std::borrow::Cow;
+use anyhow::anyhow;
 
 use fuel_tx::{Contract, StorageSlot};
 use fuel_types::{Address, BlockHeight, Word, ContractId, Bytes32, Salt};
-use fuel_vm::storage::{InterpreterStorage, ContractsAssetsStorage};
-use fuel_storage::{MerkleRoot, MerkleRootStorage, StorageError, Mappable, StorageMutate, StorageInspect, StorageSize, StorageRead};
-
+use fuel_vm::storage::{InterpreterStorage, ContractsAssetsStorage, ContractsAssets};
+use fuel_storage::{MerkleRoot, MerkleRootStorage, Mappable, StorageMutate, StorageInspect, StorageSize, StorageRead};
+use primitive_types::U256;
+use crate::fuel_core_storage::Error as StorageError;
 use crate::database::Database;
 
 #[derive(Clone, Debug)]
 pub struct VmDatabase {
     pub block_height: BlockHeight,
-    pub coinbase: Address,
+    pub coinbase: ContractId,
     pub database: Database
 }
 
@@ -18,215 +20,137 @@ trait IncreaseStorageKey {
     fn increase(&mut self) -> anyhow::Result<()>;
 }
 
-impl<M: Mappable> StorageInspect<M> for VmDatabase
-{
-    fn get(&self, _key: &M::Key) -> Result<Option<Cow<M::OwnedValue>>, StorageError> {
-        unimplemented!()
+impl IncreaseStorageKey for U256 {
+    fn increase(&mut self) -> anyhow::Result<()> {
+        *self = self
+            .checked_add(1.into())
+            .ok_or_else(|| anyhow!("range op exceeded available keyspace"))?;
+        Ok(())
+    }
+}
+
+impl Default for VmDatabase {
+    fn default() -> Self {
+        Self {
+            block_height: Default::default(),
+            coinbase: Default::default(),
+            database: Default::default(),
+        }
+    }
+}
+
+impl VmDatabase {
+    pub fn new<T>(
+        database: Database,
+        block_height: BlockHeight,
+        coinbase: ContractId,
+    ) -> Self {
+        Self {
+            block_height,
+            coinbase,
+            database,
+        }
     }
 
-    fn contains_key(&self, _key: &M::Key) -> Result<bool, StorageError> {
-        unimplemented!()
+    pub fn default_from_database(database: Database) -> Self {
+        Self {
+            database,
+            ..Default::default()
+        }
+    }
+
+    pub fn database_mut(&mut self) -> &mut Database {
+        &mut self.database
+    }
+}
+
+impl<M: Mappable> StorageInspect<M> for VmDatabase
+where
+    Database: StorageInspect<M, Error = StorageError>,
+{
+    type Error = StorageError;
+
+    fn get(&self, key: &M::Key) -> Result<Option<Cow<M::OwnedValue>>, Self::Error> {
+        // StorageInspect::<M>::get(&self.database, key)
+        todo!()
+    }
+
+    fn contains_key(&self, key: &M::Key) -> Result<bool, Self::Error> {
+        // StorageInspect::<M>::contains_key(&self.database, key)
+        todo!()
     }
 }
 
 impl<M: Mappable> StorageMutate<M> for VmDatabase
+where
+    Database: StorageMutate<M, Error = StorageError>,
 {
     fn insert(
         &mut self,
-        _key: &M::Key,
-        _value: &M::Value,
-    ) -> Result<Option<M::OwnedValue>, StorageError> {
-        unimplemented!()
+        key: &M::Key,
+        value: &M::Value,
+    ) -> Result<Option<M::OwnedValue>, Self::Error> {
+        StorageMutate::<M>::insert(&mut self.database, key, value)
     }
 
-    fn remove(&mut self, _key: &M::Key) -> Result<Option<M::OwnedValue>, StorageError> {
-        unimplemented!()
+    fn remove(&mut self, key: &M::Key) -> Result<Option<M::OwnedValue>, Self::Error> {
+        StorageMutate::<M>::remove(&mut self.database, key)
     }
 }
 
 impl<M: Mappable> StorageSize<M> for VmDatabase
+where
+    Database: StorageSize<M, Error = StorageError>,
 {
-    fn size_of_value(&self, _key: &M::Key) -> Result<Option<usize>, StorageError> {
-        unimplemented!()
+    fn size_of_value(&self, key: &M::Key) -> Result<Option<usize>, Self::Error> {
+        StorageSize::<M>::size_of_value(&self.database, key)
     }
 }
 
 impl<M: Mappable> StorageRead<M> for VmDatabase
+where
+    Database: StorageRead<M, Error = StorageError>,
 {
-    fn read(&self, _key: &M::Key, _buf: &mut [u8]) -> Result<Option<usize>, StorageError> {
-        unimplemented!()
+    fn read(&self, key: &M::Key, buf: &mut [u8]) -> Result<Option<usize>, Self::Error> {
+        StorageRead::<M>::read(&self.database, key, buf)
     }
 
     fn read_alloc(
         &self,
-        _key: &<M as Mappable>::Key,
-    ) -> Result<Option<Vec<u8>>, StorageError> {
-        unimplemented!()
+        key: &<M as Mappable>::Key,
+    ) -> Result<Option<Vec<u8>>, Self::Error> {
+        StorageRead::<M>::read_alloc(&self.database, key)
     }
 }
 
-impl<K, M: Mappable> MerkleRootStorage<K, M> for VmDatabase
+// impl<K, M: Mappable> MerkleRootStorage<K, M> for VmDatabase
+// where
+//     Database: MerkleRootStorage<K, M, Error = StorageError>,
+// {
+    // fn root(&self, key: &K) -> Result<MerkleRoot, Self::Error> {
+    //     MerkleRootStorage::<K, M>::root(&self.database, key)
+    // }
+// }
+
+impl MerkleRootStorage<ContractId, ContractsAssets> for VmDatabase
 {
-    fn root(&self, _key: &K) -> Result<MerkleRoot, StorageError> {
-        unimplemented!()
+    fn root(&self, key: &ContractId) -> Result<MerkleRoot, Self::Error> {
+        // MerkleRootStorage::<ContractId, ContractsAssets>::root(&self.database, key)
+
+        todo!()
     }
 }
 
 impl ContractsAssetsStorage for VmDatabase {}
 
-impl InterpreterStorage for VmDatabase {
-
-    fn block_height(&self) -> Result<BlockHeight, StorageError> {
-        Ok(self.block_height)
-    }
-
-    fn timestamp(&self, _height: BlockHeight) -> Result<Word, StorageError> {
-        unimplemented!()
-    }
-
-    fn block_hash(&self, _block_height: BlockHeight) -> Result<Bytes32, StorageError> {
-        unimplemented!()
-    }
-
-    fn coinbase(&self) -> Result<Address, StorageError> {
-        Ok(self.coinbase)
-    }
-
-    fn deploy_contract_with_id(
-        &mut self,
-        _salt: &Salt,
-        _slots: &[StorageSlot],
-        _contract: &Contract,
-        _root: &Bytes32,
-        _id: &ContractId,
-    ) -> Result<(), StorageError> {
-        unimplemented!()
-    }
-
-    fn merkle_contract_state_range(
-        &self,
-        _contract_id: &ContractId,
-        _start_key: &Bytes32,
-        _range: Word,
-    ) -> Result<Vec<Option<Cow<Bytes32>>>, StorageError> {
-        unimplemented!()
-    }
-
-    fn merkle_contract_state_insert_range(
-        &mut self,
-        _contract_id: &ContractId,
-        _start_key: &Bytes32,
-        _values: &[Bytes32],
-    ) -> Result<Option<()>, StorageError> {
-        unimplemented!()
-    }
-
-    fn merkle_contract_state_remove_range(
-        &mut self,
-        _contract_id: &ContractId,
-        _start_key: &Bytes32,
-        _range: Word,
-    ) -> Result<Option<()>, StorageError> {
-        unimplemented!()
-    }
-}
-
-// impl Default for VmDatabase {
-//     fn default() -> Self {
-//         Self {
-//             current_block_height: Default::default(),
-//             current_timestamp: Tai64::now(),
-//             coinbase: Default::default(),
-//             database: Default::default(),
-//         }
-//     }
-// }
-
-// impl VmDatabase {
-//     pub fn new<T>(
-//         database: Database,
-//         header: &ConsensusHeader<T>,
-//         coinbase: Address,
-//     ) -> Self {
-//         Self {
-//             current_block_height: header.height,
-//             current_timestamp: header.time,
-//             coinbase,
-//             database,
-//         }
-//     }
-
-//     pub fn database_mut(&mut self) -> &mut Database {
-//         &mut self.database
-//     }
-// }
-
-// impl<M: Mappable> StorageInspect<M> for VmDatabase
-// {
-//     type Error = StorageError;
-
-//     fn get(&self, key: &M::Key) -> Result<Option<Cow<M::OwnedValue>>, StorageError> {
-//         StorageInspect::<M>::get(&self.database, key)
-//     }
-
-//     fn contains_key(&self, key: &M::Key) -> Result<bool, StorageError> {
-//         StorageInspect::<M>::contains_key(&self.database, key)
-//     }
-// }
-
-// impl<M: Mappable> StorageMutate<M> for VmDatabase
-// {
-//     fn insert(
-//         &mut self,
-//         key: &M::Key,
-//         value: &M::Value,
-//     ) -> Result<Option<M::OwnedValue>, StorageError> {
-//         StorageMutate::<M>::insert(&mut self.database, key, value)
-//     }
-
-//     fn remove(&mut self, key: &M::Key) -> Result<Option<M::OwnedValue>, StorageError> {
-//         StorageMutate::<M>::remove(&mut self.database, key)
-//     }
-// }
-
-// impl<M: Mappable> StorageSize<M> for VmDatabase
-// {
-//     fn size_of_value(&self, key: &M::Key) -> Result<Option<usize>, StorageError> {
-//         StorageSize::<M>::size_of_value(&self.database, key)
-//     }
-// }
-
-// impl<M: Mappable> StorageRead<M> for VmDatabase
-// {
-//     fn read(&self, key: &M::Key, buf: &mut [u8]) -> Result<Option<usize>, StorageError> {
-//         StorageRead::<M>::read(&self.database, key, buf)
-//     }
-
-//     fn read_alloc(
-//         &self,
-//         key: &<M as Mappable>::Key,
-//     ) -> Result<Option<Vec<u8>>, StorageError> {
-//         StorageRead::<M>::read_alloc(&self.database, key)
-//     }
-// }
-
-// impl<K, M: Mappable> MerkleRootStorage<K, M> for VmDatabase
-// {
-//     fn root(&self, key: &K) -> Result<MerkleRoot, StorageError> {
-//         MerkleRootStorage::<K, M>::root(&self.database, key)
-//     }
-// }
-
-// impl ContractsAssetsStorage for VmDatabase {}
-
 // impl InterpreterStorage for VmDatabase {
-//     type StorageError = StorageError;
+//     type DataError = StorageError;
 
-//     fn block_height(&self) -> Result<BlockHeight, StorageError> {
+//     fn block_height(&self) -> Result<BlockHeight, Self::DataError> {
 //         Ok(self.current_block_height)
 //     }
 
-//     fn timestamp(&self, height: BlockHeight) -> Result<Word, StorageError> {
+//     fn timestamp(&self, height: BlockHeight) -> Result<Word, Self::DataError> {
 //         let timestamp = match height {
 //             // panic if $rB is greater than the current block height.
 //             height if height > self.current_block_height => {
@@ -238,7 +162,7 @@ impl InterpreterStorage for VmDatabase {
 //         Ok(timestamp.0)
 //     }
 
-//     fn block_hash(&self, block_height: BlockHeight) -> Result<Bytes32, StorageError> {
+//     fn block_hash(&self, block_height: BlockHeight) -> Result<Bytes32, Self::DataError> {
 //         // Block header hashes for blocks with height greater than or equal to current block height are zero (0x00**32).
 //         // https://github.com/FuelLabs/fuel-specs/blob/master/specs/vm/instruction_set.md#bhsh-block-hash
 //         if block_height >= self.current_block_height || block_height == Default::default()
@@ -253,7 +177,7 @@ impl InterpreterStorage for VmDatabase {
 //         }
 //     }
 
-//     fn coinbase(&self) -> Result<Address, StorageError> {
+//     fn coinbase(&self) -> Result<ContractId, Self::DataError> {
 //         Ok(self.coinbase)
 //     }
 
@@ -264,7 +188,7 @@ impl InterpreterStorage for VmDatabase {
 //         contract: &Contract,
 //         root: &Bytes32,
 //         id: &ContractId,
-//     ) -> Result<(), StorageError> {
+//     ) -> Result<(), Self::DataError> {
 //         self.storage_contract_insert(id, contract)?;
 //         self.storage_contract_root_insert(id, salt, root)?;
 
@@ -279,7 +203,7 @@ impl InterpreterStorage for VmDatabase {
 //         contract_id: &ContractId,
 //         start_key: &Bytes32,
 //         range: Word,
-//     ) -> Result<Vec<Option<Cow<Bytes32>>>, StorageError> {
+//     ) -> Result<Vec<Option<Cow<Bytes32>>>, Self::DataError> {
 //         // TODO: Optimization: Iterate only over `range` elements.
 //         let mut iterator = self.database.iter_all_filtered::<Vec<u8>, Bytes32, _, _>(
 //             Column::ContractsState,
@@ -330,7 +254,7 @@ impl InterpreterStorage for VmDatabase {
 //         contract_id: &ContractId,
 //         start_key: &Bytes32,
 //         values: &[Bytes32],
-//     ) -> Result<Option<()>, StorageError> {
+//     ) -> Result<Option<()>, Self::DataError> {
 //         let mut current_key = U256::from_big_endian(start_key.as_ref());
 //         // verify key is in range
 //         current_key
@@ -366,7 +290,7 @@ impl InterpreterStorage for VmDatabase {
 //         contract_id: &ContractId,
 //         start_key: &Bytes32,
 //         range: Word,
-//     ) -> Result<Option<()>, StorageError> {
+//     ) -> Result<Option<()>, Self::DataError> {
 //         let mut found_unset = false;
 
 //         let mut current_key = U256::from_big_endian(start_key.as_ref());

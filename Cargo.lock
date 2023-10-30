@@ -1351,9 +1351,9 @@ dependencies = [
 
 [[package]]
 name = "curve25519-dalek"
-version = "4.1.0"
+version = "4.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "622178105f911d937a42cdb140730ba4a3ed2becd8ae6ce39c7d28b5d75d4588"
+checksum = "e89b8c6a2e4b1f45971ad09761aafb85514a84744b67a95e32c3cc1352d1f65c"
 dependencies = [
  "cfg-if",
  "cpufeatures",
@@ -1572,9 +1572,9 @@ dependencies = [
 
 [[package]]
 name = "ed25519"
-version = "2.2.2"
+version = "2.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "60f6d271ca33075c88028be6f04d502853d63a5ece419d269c15315d4fc1cf1d"
+checksum = "115531babc129696a58c64a4fef0a8bf9e9698629fb97e9e40767d235cfbcd53"
 dependencies = [
  "signature",
 ]
@@ -1934,7 +1934,7 @@ dependencies = [
  "generic-array",
  "hex",
  "k256",
- "num_enum 0.6.1",
+ "num_enum",
  "once_cell",
  "open-fastrlp",
  "rand",
@@ -2093,9 +2093,9 @@ dependencies = [
 
 [[package]]
 name = "ethnum"
-version = "1.4.0"
+version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6c8ff382b2fa527fb7fb06eeebfc5bbb3f17e3cc6b9d70b006c41daa8824adac"
+checksum = "b90ca2580b73ab6a1f724b76ca11ab632df820fd6040c336200d2c1df7b3c82c"
 
 [[package]]
 name = "event-listener"
@@ -2177,9 +2177,9 @@ dependencies = [
 
 [[package]]
 name = "fiat-crypto"
-version = "0.2.1"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d0870c84016d4b481be5c9f323c24f65e31e901ae618f0e80f4308fb00de1d2d"
+checksum = "a481586acf778f1b1455424c343f71124b048ffa5f4fc3f8f6ae9dc432dcb3c7"
 
 [[package]]
 name = "figment"
@@ -2607,8 +2607,8 @@ dependencies = [
 
 [[package]]
 name = "fuel-asm"
-version = "0.37.0"
-source = "git+https://github.com/DefiCake/fuel-vm?rev=1e44c68571def6deac1048de57ab083fd6e4fdda#1e44c68571def6deac1048de57ab083fd6e4fdda"
+version = "0.39.0"
+source = "git+https://github.com/DefiCake/fuel-vm?rev=2830f93d486e63df58f77f88b3ae20cb1bf38188#2830f93d486e63df58f77f88b3ae20cb1bf38188"
 dependencies = [
  "bitflags 1.3.2",
  "fuel-types",
@@ -2618,8 +2618,8 @@ dependencies = [
 
 [[package]]
 name = "fuel-crypto"
-version = "0.37.0"
-source = "git+https://github.com/DefiCake/fuel-vm?rev=1e44c68571def6deac1048de57ab083fd6e4fdda#1e44c68571def6deac1048de57ab083fd6e4fdda"
+version = "0.39.0"
+source = "git+https://github.com/DefiCake/fuel-vm?rev=2830f93d486e63df58f77f88b3ae20cb1bf38188#2830f93d486e63df58f77f88b3ae20cb1bf38188"
 dependencies = [
  "ecdsa",
  "ed25519-dalek",
@@ -2633,8 +2633,8 @@ dependencies = [
 
 [[package]]
 name = "fuel-derive"
-version = "0.37.0"
-source = "git+https://github.com/DefiCake/fuel-vm?rev=1e44c68571def6deac1048de57ab083fd6e4fdda#1e44c68571def6deac1048de57ab083fd6e4fdda"
+version = "0.39.0"
+source = "git+https://github.com/DefiCake/fuel-vm?rev=2830f93d486e63df58f77f88b3ae20cb1bf38188#2830f93d486e63df58f77f88b3ae20cb1bf38188"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2644,30 +2644,30 @@ dependencies = [
 
 [[package]]
 name = "fuel-merkle"
-version = "0.37.0"
-source = "git+https://github.com/DefiCake/fuel-vm?rev=1e44c68571def6deac1048de57ab083fd6e4fdda#1e44c68571def6deac1048de57ab083fd6e4fdda"
+version = "0.39.0"
+source = "git+https://github.com/DefiCake/fuel-vm?rev=2830f93d486e63df58f77f88b3ae20cb1bf38188#2830f93d486e63df58f77f88b3ae20cb1bf38188"
 dependencies = [
+ "derive_more",
  "digest 0.10.7",
  "fuel-storage",
  "hashbrown 0.13.2",
  "hex",
+ "serde",
  "sha2 0.10.7",
 ]
 
 [[package]]
 name = "fuel-storage"
-version = "0.37.0"
-source = "git+https://github.com/DefiCake/fuel-vm?rev=1e44c68571def6deac1048de57ab083fd6e4fdda#1e44c68571def6deac1048de57ab083fd6e4fdda"
-dependencies = [
- "anyhow",
-]
+version = "0.39.0"
+source = "git+https://github.com/DefiCake/fuel-vm?rev=2830f93d486e63df58f77f88b3ae20cb1bf38188#2830f93d486e63df58f77f88b3ae20cb1bf38188"
 
 [[package]]
 name = "fuel-tx"
-version = "0.37.0"
-source = "git+https://github.com/DefiCake/fuel-vm?rev=1e44c68571def6deac1048de57ab083fd6e4fdda#1e44c68571def6deac1048de57ab083fd6e4fdda"
+version = "0.39.0"
+source = "git+https://github.com/DefiCake/fuel-vm?rev=2830f93d486e63df58f77f88b3ae20cb1bf38188#2830f93d486e63df58f77f88b3ae20cb1bf38188"
 dependencies = [
  "derivative",
+ "derive_more",
  "fuel-asm",
  "fuel-crypto",
  "fuel-merkle",
@@ -2675,7 +2675,6 @@ dependencies = [
  "hashbrown 0.14.0",
  "itertools",
  "num-integer",
- "num_enum 0.7.0",
  "serde",
  "serde_json",
  "strum 0.24.1",
@@ -2684,8 +2683,8 @@ dependencies = [
 
 [[package]]
 name = "fuel-types"
-version = "0.37.0"
-source = "git+https://github.com/DefiCake/fuel-vm?rev=1e44c68571def6deac1048de57ab083fd6e4fdda#1e44c68571def6deac1048de57ab083fd6e4fdda"
+version = "0.39.0"
+source = "git+https://github.com/DefiCake/fuel-vm?rev=2830f93d486e63df58f77f88b3ae20cb1bf38188#2830f93d486e63df58f77f88b3ae20cb1bf38188"
 dependencies = [
  "fuel-derive",
  "hex",
@@ -2694,12 +2693,13 @@ dependencies = [
 
 [[package]]
 name = "fuel-vm"
-version = "0.37.0"
-source = "git+https://github.com/DefiCake/fuel-vm?rev=1e44c68571def6deac1048de57ab083fd6e4fdda#1e44c68571def6deac1048de57ab083fd6e4fdda"
+version = "0.39.0"
+source = "git+https://github.com/DefiCake/fuel-vm?rev=2830f93d486e63df58f77f88b3ae20cb1bf38188#2830f93d486e63df58f77f88b3ae20cb1bf38188"
 dependencies = [
  "async-trait",
  "bitflags 1.3.2",
  "derivative",
+ "derive_more",
  "ethnum",
  "fuel-asm",
  "fuel-crypto",
@@ -4395,16 +4395,7 @@ version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7a015b430d3c108a207fd776d2e2196aaf8b1cf8cf93253e3a097ff3085076a1"
 dependencies = [
- "num_enum_derive 0.6.1",
-]
-
-[[package]]
-name = "num_enum"
-version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "70bf6736f74634d299d00086f02986875b3c2d924781a6a2cb6c201e73da0ceb"
-dependencies = [
- "num_enum_derive 0.7.0",
+ "num_enum_derive",
 ]
 
 [[package]]
@@ -4414,17 +4405,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "96667db765a921f7b295ffee8b60472b686a51d4f21c2ee4ffdb94c7013b65a6"
 dependencies = [
  "proc-macro-crate",
- "proc-macro2",
- "quote",
- "syn 2.0.31",
-]
-
-[[package]]
-name = "num_enum_derive"
-version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "56ea360eafe1022f7cc56cd7b869ed57330fb2453d0c7831d99b74c65d2f5597"
-dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.31",
@@ -5116,6 +5096,7 @@ dependencies = [
  "fuel-tx",
  "fuel-types",
  "fuel-vm",
+ "primitive-types",
  "serde",
  "strum 0.24.1",
  "strum_macros 0.24.3",
@@ -8073,9 +8054,6 @@ name = "x509"
 version = "0.1.0"
 dependencies = [
  "ethabi",
- "fuel-crypto",
- "fuel-tx",
- "fuel-vm",
  "hex",
  "json",
  "prover-core",
