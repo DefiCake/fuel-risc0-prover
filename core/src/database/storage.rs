@@ -1,6 +1,10 @@
-use fuel_storage::{Mappable, MerkleRoot};
-use fuel_types::{BlockHeight, ContractId};
+use std::borrow::Cow;
+
+use fuel_storage::{Mappable, MerkleRoot, StorageInspect};
+use fuel_tx::TxId;
+use fuel_types::{BlockHeight, ContractId, Nonce};
 use fuel_vm::fuel_merkle::{binary, sparse};
+use serde::de::DeserializeOwned;
 
 use crate::fuel_core_storage::{Error as StorageError, Result as StorageResult};
 use crate::database::{Database, Column};
@@ -131,5 +135,98 @@ impl DatabaseColumn for ContractsStateMerkleData {
 impl DatabaseColumn for ContractsStateMerkleMetadata {
     fn column() -> Column {
         Column::ContractsStateMerkleMetadata
+    }
+}
+
+impl<T> StorageInspect<T> for Database
+where
+    T: Mappable + DatabaseColumn,
+    T::Key: ToDatabaseKey,
+    T::OwnedValue: DeserializeOwned,
+{
+    type Error = StorageError;
+
+    fn get(&self, key: &T::Key) -> StorageResult<Option<Cow<T::OwnedValue>>> {
+        self.get(key.database_key().as_ref(), T::column())
+            .map_err(Into::into)
+    }
+
+    fn contains_key(&self, key: &T::Key) -> StorageResult<bool> {
+        self.contains_key(key.database_key().as_ref(), T::column())
+            .map_err(Into::into)
+    }
+}
+
+pub trait ToDatabaseKey {
+    /// A new type of prepared database key that can be converted into bytes.
+    type Type<'a>: AsRef<[u8]>
+    where
+        Self: 'a;
+
+    /// Coverts the key into database key that supports byte presentation.
+    fn database_key(&self) -> Self::Type<'_>;
+}
+
+impl ToDatabaseKey for BlockHeight {
+    type Type<'a> = [u8; 4];
+
+    fn database_key(&self) -> Self::Type<'_> {
+        self.to_bytes()
+    }
+}
+
+impl ToDatabaseKey for u64 {
+    type Type<'a> = [u8; 8];
+
+    fn database_key(&self) -> Self::Type<'_> {
+        self.to_be_bytes()
+    }
+}
+
+impl ToDatabaseKey for Nonce {
+    type Type<'a> = &'a [u8; 32];
+
+    fn database_key(&self) -> Self::Type<'_> {
+        self.deref()
+    }
+}
+
+impl ToDatabaseKey for ContractId {
+    type Type<'a> = &'a [u8; 32];
+
+    fn database_key(&self) -> Self::Type<'_> {
+        self.deref()
+    }
+}
+
+impl ToDatabaseKey for BlockId {
+    type Type<'a> = &'a [u8];
+
+    fn database_key(&self) -> Self::Type<'_> {
+        self.as_slice()
+    }
+}
+
+impl ToDatabaseKey for TxId {
+    type Type<'a> = &'a [u8; 32];
+
+    fn database_key(&self) -> Self::Type<'_> {
+        self.deref()
+    }
+}
+
+impl ToDatabaseKey for () {
+    type Type<'a> = &'a [u8];
+
+    fn database_key(&self) -> Self::Type<'_> {
+        &[]
+    }
+}
+
+impl<const N: usize> ToDatabaseKey for [u8; N] {
+    type Type<'a> = &'a [u8];
+
+    fn database_key(&self) -> Self::Type<'_> {
+        self.as_slice()
     }
 }
