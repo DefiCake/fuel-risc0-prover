@@ -1,3 +1,5 @@
+use fuel_vm::prelude::{RuntimeError, InterpreterError};
+
 #[derive(thiserror::Error, Debug)]
 #[non_exhaustive]
 /// Error occurring during interaction with storage
@@ -15,6 +17,18 @@ pub enum Error {
     /// Unknown or not expected(by architecture) error.
     #[error(transparent)]
     Other(#[from] anyhow::Error),
+}
+
+impl From<Error> for RuntimeError<Error> {
+    fn from(e: Error) -> Self {
+        RuntimeError::Storage(e)
+    }
+}
+
+impl From<Error> for InterpreterError<Error> {
+    fn from(e: Error) -> Self {
+        InterpreterError::Storage(e)
+    }
 }
 
 pub type Result<T> = core::result::Result<T, Error>;

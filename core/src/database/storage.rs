@@ -1,4 +1,7 @@
-use std::borrow::Cow;
+use std::{
+    borrow::Cow,
+    ops::Deref,
+};
 
 use fuel_storage::{Mappable, MerkleRoot, StorageInspect, StorageMutate};
 use fuel_tx::TxId;
@@ -217,8 +220,7 @@ impl ToDatabaseKey for Nonce {
     type Type<'a> = &'a [u8; 32];
 
     fn database_key(&self) -> Self::Type<'_> {
-        // self.deref()
-        todo!()
+        self.deref()
     }
 }
 
@@ -226,8 +228,7 @@ impl ToDatabaseKey for ContractId {
     type Type<'a> = &'a [u8; 32];
 
     fn database_key(&self) -> Self::Type<'_> {
-        // self.deref()
-        todo!()
+        self.deref()
     }
 }
 
@@ -243,8 +244,7 @@ impl ToDatabaseKey for TxId {
     type Type<'a> = &'a [u8; 32];
 
     fn database_key(&self) -> Self::Type<'_> {
-        // self.deref()
-        todo!()
+        self.deref()
     }
 }
 
