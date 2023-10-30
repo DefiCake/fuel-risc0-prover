@@ -1,9 +1,10 @@
 use std::borrow::Cow;
 
-use fuel_storage::{Mappable, MerkleRoot, StorageInspect};
+use fuel_storage::{Mappable, MerkleRoot, StorageInspect, StorageMutate};
 use fuel_tx::TxId;
 use fuel_types::{BlockHeight, ContractId, Nonce};
 use fuel_vm::fuel_merkle::{binary, sparse};
+use serde::Serialize;
 use serde::de::DeserializeOwned;
 
 use crate::fuel_core_storage::{Error as StorageError, Result as StorageResult};
@@ -153,6 +154,28 @@ where
 
     fn contains_key(&self, key: &T::Key) -> StorageResult<bool> {
         self.contains_key(key.database_key().as_ref(), T::column())
+            .map_err(Into::into)
+    }
+}
+
+impl<T> StorageMutate<T> for Database
+where
+    T: Mappable + DatabaseColumn,
+    T::Key: ToDatabaseKey,
+    T::Value: Serialize,
+    T::OwnedValue: DeserializeOwned,
+{
+    fn insert(
+        &mut self,
+        key: &T::Key,
+        value: &T::Value,
+    ) -> StorageResult<Option<T::OwnedValue>> {
+        Database::insert(self, key.database_key().as_ref(), T::column(), &value)
+            .map_err(Into::into)
+    }
+
+    fn remove(&mut self, key: &T::Key) -> StorageResult<Option<T::OwnedValue>> {
+        Database::remove(self, key.database_key().as_ref(), T::column())
             .map_err(Into::into)
     }
 }
