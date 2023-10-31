@@ -58,7 +58,6 @@ impl AsRef<[u8]> for BlockId {
 }
 
 /// Block height of the data availability layer
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(
     Sub,
     Copy,
@@ -76,6 +75,8 @@ impl AsRef<[u8]> for BlockId {
     Rem,
     Deref,
     Hash,
+    serde::Serialize,
+    serde::Deserialize
 )]
 #[rem(forward)]
 pub struct DaBlockHeight(pub u64);
