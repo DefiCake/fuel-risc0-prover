@@ -13,6 +13,7 @@ fuel-storage = { workspace = true }
 fuel-tx = { workspace = true }
 fuel-types = { workspace = true }
 fuel-vm = { workspace = true }
+hex = { workspace = true }
 itertools = { workspace = true }
 primitive-types = { workspace = true }
 serde = { workspace = true }
