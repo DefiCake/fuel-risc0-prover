@@ -2,8 +2,8 @@ use crate::{
     serialization::{
         HexNumber,
         HexType,
-    }, genesis::GenesisCommitment,
-    // GenesisCommitment,
+    }, 
+    genesis::GenesisCommitment
 };
 use fuel_crypto::Hasher;
 use fuel_storage::MerkleRoot;
