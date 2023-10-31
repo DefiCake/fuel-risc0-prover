@@ -4,6 +4,7 @@ pub mod contracts;
 pub mod balances;
 pub mod state;
 pub mod storage;
+pub mod metadata;
 
 use serde::{
     de::DeserializeOwned,

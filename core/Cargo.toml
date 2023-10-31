@@ -15,7 +15,7 @@ fuel-types = { workspace = true }
 fuel-vm = { workspace = true }
 hex = { workspace = true }
 itertools = { workspace = true }
-postcard = { workspace = true }
+postcard = { workspace = true, features = ["alloc"] }
 primitive-types = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
