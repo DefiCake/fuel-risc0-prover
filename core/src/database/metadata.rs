@@ -1,11 +1,10 @@
-use serde::{Deserialize, Serialize};
-
-use crate::{database::{
+use crate::database::{
     Column,
     Database,
     Error as DatabaseError,
     Result as DatabaseResult,
-}, config::ChainConfig};
+};
+use fuel_core_chain_config::ChainConfig;
 
 pub(crate) const DB_VERSION_KEY: &[u8] = b"version";
 pub(crate) const CHAIN_NAME_KEY: &[u8] = b"chain_name";

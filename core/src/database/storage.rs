@@ -1,20 +1,38 @@
+use crate::database::{
+    Column,
+    Database,
+};
+use fuel_core_storage::{
+    Error as StorageError,
+    Mappable,
+    MerkleRoot,
+    Result as StorageResult,
+    StorageInspect,
+    StorageMutate,
+};
+use fuel_core_types::{
+    blockchain::primitives::BlockId,
+    fuel_merkle::{
+        binary,
+        sparse,
+    },
+    fuel_tx::TxId,
+    fuel_types::{
+        BlockHeight,
+        ContractId,
+        Nonce,
+    },
+};
+use serde::{
+    de::DeserializeOwned,
+    Serialize,
+};
 use std::{
     borrow::Cow,
     ops::Deref,
 };
 
-use fuel_storage::{Mappable, MerkleRoot, StorageInspect, StorageMutate};
-use fuel_tx::TxId;
-use fuel_types::{BlockHeight, ContractId, Nonce};
-use fuel_vm::fuel_merkle::{binary, sparse};
-use fuel_vm::storage::ContractsInfo;
-use serde::Serialize;
-use serde::de::DeserializeOwned;
-
-use crate::fuel_core_storage_custom::{Error as StorageError, Result as StorageResult};
-use crate::database::{Database, Column};
-use crate::primitives::BlockId;
-
+/// Metadata for dense Merkle trees
 #[derive(Clone, serde::Serialize, serde::Deserialize)]
 pub struct DenseMerkleMetadata {
     /// The root hash of the dense Merkle tree structure
@@ -25,12 +43,34 @@ pub struct DenseMerkleMetadata {
     pub version: u64,
 }
 
+impl Default for DenseMerkleMetadata {
+    fn default() -> Self {
+        let empty_merkle_tree = binary::root_calculator::MerkleRootCalculator::new();
+        Self {
+            root: empty_merkle_tree.root(),
+            version: 0,
+        }
+    }
+}
+
+/// Metadata for sparse Merkle trees
 #[derive(Clone, serde::Serialize, serde::Deserialize)]
 pub struct SparseMerkleMetadata {
     /// The root hash of the sparse Merkle tree structure
     pub root: MerkleRoot,
 }
 
+impl Default for SparseMerkleMetadata {
+    fn default() -> Self {
+        let empty_merkle_tree = sparse::in_memory::MerkleTree::new();
+        Self {
+            root: empty_merkle_tree.root(),
+        }
+    }
+}
+
+/// The table of fuel block's secondary key - `BlockHeight`.
+/// It links the `BlockHeight` to corresponding `BlockId`.
 pub struct FuelBlockSecondaryKeyBlockHeights;
 
 impl Mappable for FuelBlockSecondaryKeyBlockHeights {
@@ -42,6 +82,7 @@ impl Mappable for FuelBlockSecondaryKeyBlockHeights {
     type OwnedValue = Self::Value;
 }
 
+/// The table of BMT data for Fuel blocks.
 pub struct FuelBlockMerkleData;
 
 impl Mappable for FuelBlockMerkleData {
@@ -51,6 +92,7 @@ impl Mappable for FuelBlockMerkleData {
     type OwnedValue = Self::Value;
 }
 
+/// The metadata table for [`FuelBlockMerkleData`](FuelBlockMerkleData) table.
 pub struct FuelBlockMerkleMetadata;
 
 impl Mappable for FuelBlockMerkleMetadata {
@@ -60,6 +102,7 @@ impl Mappable for FuelBlockMerkleMetadata {
     type OwnedValue = Self::Value;
 }
 
+/// The table of SMT data for Contract assets.
 pub struct ContractsAssetsMerkleData;
 
 impl Mappable for ContractsAssetsMerkleData {
@@ -69,6 +112,7 @@ impl Mappable for ContractsAssetsMerkleData {
     type OwnedValue = Self::Value;
 }
 
+/// The metadata table for [`ContractsAssetsMerkleData`](ContractsAssetsMerkleData) table
 pub struct ContractsAssetsMerkleMetadata;
 
 impl Mappable for ContractsAssetsMerkleMetadata {
@@ -78,6 +122,7 @@ impl Mappable for ContractsAssetsMerkleMetadata {
     type OwnedValue = Self::Value;
 }
 
+/// The table of SMT data for Contract state.
 pub struct ContractsStateMerkleData;
 
 impl Mappable for ContractsStateMerkleData {
@@ -87,6 +132,7 @@ impl Mappable for ContractsStateMerkleData {
     type OwnedValue = Self::Value;
 }
 
+/// The metadata table for [`ContractsStateMerkleData`](ContractsStateMerkleData) table
 pub struct ContractsStateMerkleMetadata;
 
 impl Mappable for ContractsStateMerkleMetadata {
@@ -96,6 +142,13 @@ impl Mappable for ContractsStateMerkleMetadata {
     type OwnedValue = Self::Value;
 }
 
+/// The table has a corresponding column in the database.
+///
+/// Using this trait allows the configured mappable type to have its'
+/// database integration auto-implemented for single column interactions.
+///
+/// If the mappable type requires access to multiple columns or custom logic during setting/getting
+/// then its' storage interfaces should be manually implemented and this trait should be avoided.
 pub trait DatabaseColumn {
     /// The column of the table.
     fn column() -> Column;
@@ -143,12 +196,6 @@ impl DatabaseColumn for ContractsStateMerkleMetadata {
     }
 }
 
-impl DatabaseColumn for ContractsInfo {
-    fn column() -> Column {
-        Column::ContractsInfo
-    }
-}
-
 impl<T> StorageInspect<T> for Database
 where
     T: Mappable + DatabaseColumn,
@@ -190,6 +237,7 @@ where
     }
 }
 
+/// Some keys requires pre-processing that could change their type.
 pub trait ToDatabaseKey {
     /// A new type of prepared database key that can be converted into bytes.
     type Type<'a>: AsRef<[u8]>

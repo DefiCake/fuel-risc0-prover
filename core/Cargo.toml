@@ -8,6 +8,13 @@ anyhow = { workspace = true }
 bech32 = { workspace = true }
 derive_more = { workspace = true }
 enum-iterator = { workspace = true }
+fuel-core-chain-config = { workspace = true }
+fuel-core-database = { workspace = true }
+fuel-core-executor = { workspace = true }
+fuel-core-services = { workspace = true }
+fuel-core-storage = { workspace = true }
+fuel-core-types = { workspace = true }
+fuel-core-txpool = { workspace = true }
 fuel-crypto = { workspace = true }
 fuel-storage = { workspace = true }
 fuel-tx = { workspace = true }

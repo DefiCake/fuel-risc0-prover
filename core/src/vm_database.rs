@@ -6,7 +6,7 @@ use fuel_types::{BlockHeight, Word, ContractId, Bytes32, Salt};
 use fuel_vm::storage::{InterpreterStorage, ContractsAssetsStorage};
 use fuel_storage::{MerkleRoot, MerkleRootStorage, Mappable, StorageMutate, StorageInspect, StorageSize, StorageRead};
 use primitive_types::U256;
-use crate::fuel_core_storage_custom::Error as StorageError;
+use fuel_core_storage::Error as StorageError;
 use crate::database::Database;
 
 #[derive(Clone, Debug)]
