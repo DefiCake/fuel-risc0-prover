@@ -6,7 +6,7 @@ use fuel_types::{BlockHeight, Word, ContractId, Bytes32, Salt};
 use fuel_vm::storage::{InterpreterStorage, ContractsAssetsStorage};
 use fuel_storage::{MerkleRoot, MerkleRootStorage, Mappable, StorageMutate, StorageInspect, StorageSize, StorageRead};
 use primitive_types::U256;
-use crate::fuel_core_storage::Error as StorageError;
+use crate::fuel_core_storage_custom::Error as StorageError;
 use crate::database::Database;
 
 #[derive(Clone, Debug)]
@@ -174,7 +174,7 @@ impl InterpreterStorage for VmDatabase {
         &self,
         _contract_id: &ContractId,
         _start_key: &Bytes32,
-        _range: Word,
+        _range: usize,
     ) -> Result<Vec<Option<Cow<Bytes32>>>, Self::DataError> {
         todo!()
     }
@@ -184,7 +184,7 @@ impl InterpreterStorage for VmDatabase {
         _contract_id: &ContractId,
         _start_key: &Bytes32,
         _values: &[Bytes32],
-    ) -> Result<Option<()>, Self::DataError> {
+    ) -> Result<usize, Self::DataError> {
         todo!()
     }
 
@@ -192,7 +192,7 @@ impl InterpreterStorage for VmDatabase {
         &mut self,
         _contract_id: &ContractId,
         _start_key: &Bytes32,
-        _range: Word,
+        _range: usize,
     ) -> Result<Option<()>, Self::DataError> {
         todo!()
     }

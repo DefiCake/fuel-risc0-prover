@@ -1,6 +1,6 @@
 pub mod vm_database;
 pub mod database;
-pub mod fuel_core_storage;
+pub mod fuel_core_storage_custom;
 pub mod fuel_core_database;
 pub mod primitives;
 pub mod config;
@@ -11,7 +11,6 @@ use fuel_vm::interpreter::{Interpreter, InterpreterParams};
 use fuel_tx::Script;
 use vm_database::VmDatabase;
 use database::Database;
-
 
 
 pub fn initialize_interpreter() -> Interpreter<VmDatabase, Script>  {

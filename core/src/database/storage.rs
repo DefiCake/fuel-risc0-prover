@@ -11,7 +11,7 @@ use fuel_vm::storage::ContractsInfo;
 use serde::Serialize;
 use serde::de::DeserializeOwned;
 
-use crate::fuel_core_storage::{Error as StorageError, Result as StorageResult};
+use crate::fuel_core_storage_custom::{Error as StorageError, Result as StorageResult};
 use crate::database::{Database, Column};
 use crate::primitives::BlockId;
 

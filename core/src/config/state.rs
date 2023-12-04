@@ -10,7 +10,7 @@ use serde_with::{
     skip_serializing_none,
 };
 
-use crate::{config::{CoinConfig, ContractConfig, MessageConfig}, fuel_core_storage::Result as StorageResult};
+use crate::{config::{CoinConfig, ContractConfig, MessageConfig}, fuel_core_storage_custom::Result as StorageResult};
 
 #[serde_as]
 #[skip_serializing_none]

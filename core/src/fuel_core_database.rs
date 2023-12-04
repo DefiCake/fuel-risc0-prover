@@ -1,4 +1,4 @@
-use crate::fuel_core_storage::Error as StorageError;
+use crate::fuel_core_storage_custom::Error as StorageError;
 
 /// The error occurred during work with any of databases.
 #[derive(thiserror::Error, Debug)]

@@ -4,7 +4,7 @@ use fuel_storage::{StorageInspect, Mappable, StorageMutate, MerkleRootStorage, M
 use fuel_types::{ContractId, Bytes32};
 use fuel_vm::storage::ContractsState;
 
-use crate::fuel_core_storage::{Error as StorageError, Result as StorageResult};
+use crate::fuel_core_storage_custom::{Error as StorageError, Result as StorageResult};
 use crate::database::{Database, Column};
 
 impl StorageInspect<ContractsState> for Database {

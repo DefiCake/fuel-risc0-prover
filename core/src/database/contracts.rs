@@ -5,7 +5,7 @@ use fuel_tx::Contract;
 use fuel_types::ContractId;
 use fuel_vm::storage::ContractsRawCode;
 
-use crate::fuel_core_storage::{Error as StorageError, Result as StorageResult};
+use crate::fuel_core_storage_custom::{Error as StorageError, Result as StorageResult};
 use crate::database::{Database, Column};
 
 impl StorageInspect<ContractsRawCode> for Database {
