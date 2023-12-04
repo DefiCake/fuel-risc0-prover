@@ -10,12 +10,15 @@ pub mod state;
 
 use fuel_vm::interpreter::{Interpreter, InterpreterParams};
 use fuel_tx::Script;
+use fuel_core_chain_config::ChainConfig;
+
+use database::Database;
 // use vm_database::VmDatabase;
 // use database::Database;
 
-pub fn initialize_interpreter()  {
-    todo!()
-    
+pub fn initialize_interpreter(json: &str)  {   
+    let config: ChainConfig = serde_json::from_str(json).expect("Could not parse ChainConfig JSON");
+    let database = Database::in_memory();
     // let db: Database = Database::new();
 
     // let vm_db: VmDatabase = VmDatabase { block_height: Default::default(), coinbase: Default::default(), database: db };
