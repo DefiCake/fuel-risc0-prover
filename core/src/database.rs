@@ -223,19 +223,18 @@ impl Database {
         column: Column,
         value: &V,
     ) -> DatabaseResult<Option<R>> {
-        todo!()
-        // let result = self.data.put(
-        //     key.as_ref(),
-        //     column,
-        //     Arc::new(postcard::to_stdvec(value).map_err(|_| DatabaseError::Codec)?),
-        // )?;
-        // if let Some(previous) = result {
-        //     Ok(Some(
-        //         postcard::from_bytes(&previous).map_err(|_| DatabaseError::Codec)?,
-        //     ))
-        // } else {
-        //     Ok(None)
-        // }
+        let result = self.data.put(
+            key.as_ref(),
+            column,
+            Arc::new(postcard::to_stdvec(value).map_err(|_| DatabaseError::Codec)?),
+        )?;
+        if let Some(previous) = result {
+            Ok(Some(
+                postcard::from_bytes(&previous).map_err(|_| DatabaseError::Codec)?,
+            ))
+        } else {
+            Ok(None)
+        }
     }
 
     fn batch_insert<K: AsRef<[u8]>, V: Serialize, S>(
@@ -246,23 +245,22 @@ impl Database {
     where
         S: Iterator<Item = (K, V)>,
     {   
-        todo!()
-        // let set: Vec<_> = set
-        //     .map(|(key, value)| {
-        //         let value =
-        //             postcard::to_stdvec(&value).map_err(|_| DatabaseError::Codec)?;
+        let set: Vec<_> = set
+            .map(|(key, value)| {
+                let value =
+                    postcard::to_stdvec(&value).map_err(|_| DatabaseError::Codec)?;
 
-        //         let tuple = (
-        //             key.as_ref().to_vec(),
-        //             column,
-        //             WriteOperation::Insert(Arc::new(value)),
-        //         );
+                let tuple = (
+                    key.as_ref().to_vec(),
+                    column,
+                    WriteOperation::Insert(Arc::new(value)),
+                );
 
-        //         Ok::<_, DatabaseError>(tuple)
-        //     })
-        //     .try_collect()?;
+                Ok::<_, DatabaseError>(tuple)
+            })
+            .try_collect()?;
 
-        // self.data.batch_write(&mut set.into_iter())
+        self.data.batch_write(&mut set.into_iter())
     }
 
     fn remove<V: DeserializeOwned>(
@@ -270,11 +268,10 @@ impl Database {
         key: &[u8],
         column: Column,
     ) -> DatabaseResult<Option<V>> {
-        todo!()
-        // self.data
-        //     .delete(key, column)?
-        //     .map(|val| postcard::from_bytes(&val).map_err(|_| DatabaseError::Codec))
-        //     .transpose()
+        self.data
+            .delete(key, column)?
+            .map(|val| postcard::from_bytes(&val).map_err(|_| DatabaseError::Codec))
+            .transpose()
     }
 
     fn write(&self, key: &[u8], column: Column, buf: &[u8]) -> DatabaseResult<usize> {
@@ -329,11 +326,10 @@ impl Database {
         key: &[u8],
         column: Column,
     ) -> DatabaseResult<Option<V>> {
-        todo!()
-        // self.data
-        //     .get(key, column)?
-        //     .map(|val| postcard::from_bytes(&val).map_err(|_| DatabaseError::Codec))
-        //     .transpose()
+        self.data
+            .get(key, column)?
+            .map(|val| postcard::from_bytes(&val).map_err(|_| DatabaseError::Codec))
+            .transpose()
     }
 
     fn iter_all<K, V>(
