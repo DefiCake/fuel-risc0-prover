@@ -3,6 +3,9 @@ pub mod database;
 pub mod fuel_core_storage;
 pub mod fuel_core_database;
 pub mod primitives;
+pub mod config;
+pub mod serialization;
+pub mod genesis;
 
 use fuel_vm::interpreter::{Interpreter, InterpreterParams};
 use fuel_tx::Script;
