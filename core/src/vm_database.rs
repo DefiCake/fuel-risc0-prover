@@ -70,12 +70,12 @@ where
 {
     type Error = StorageError;
 
-    fn get(&self, key: &M::Key) -> Result<Option<Cow<M::OwnedValue>>, Self::Error> {
+    fn get(&self, _key: &M::Key) -> Result<Option<Cow<M::OwnedValue>>, Self::Error> {
         // StorageInspect::<M>::get(&self.database, key)
         todo!()
     }
 
-    fn contains_key(&self, key: &M::Key) -> Result<bool, Self::Error> {
+    fn contains_key(&self, _key: &M::Key) -> Result<bool, Self::Error> {
         // StorageInspect::<M>::contains_key(&self.database, key)
         todo!()
     }
@@ -141,11 +141,11 @@ impl InterpreterStorage for VmDatabase {
         todo!()
     }
 
-    fn timestamp(&self, height: BlockHeight) -> Result<Word, Self::DataError> {
+    fn timestamp(&self, _height: BlockHeight) -> Result<Word, Self::DataError> {
         todo!()
     }
 
-    fn block_hash(&self, block_height: BlockHeight) -> Result<Bytes32, Self::DataError> {
+    fn block_hash(&self, _block_height: BlockHeight) -> Result<Bytes32, Self::DataError> {
         todo!()
     }
 
@@ -172,27 +172,27 @@ impl InterpreterStorage for VmDatabase {
 
     fn merkle_contract_state_range(
         &self,
-        contract_id: &ContractId,
-        start_key: &Bytes32,
-        range: Word,
+        _contract_id: &ContractId,
+        _start_key: &Bytes32,
+        _range: Word,
     ) -> Result<Vec<Option<Cow<Bytes32>>>, Self::DataError> {
         todo!()
     }
 
     fn merkle_contract_state_insert_range(
         &mut self,
-        contract_id: &ContractId,
-        start_key: &Bytes32,
-        values: &[Bytes32],
+        _contract_id: &ContractId,
+        _start_key: &Bytes32,
+        _values: &[Bytes32],
     ) -> Result<Option<()>, Self::DataError> {
         todo!()
     }
 
     fn merkle_contract_state_remove_range(
         &mut self,
-        contract_id: &ContractId,
-        start_key: &Bytes32,
-        range: Word,
+        _contract_id: &ContractId,
+        _start_key: &Bytes32,
+        _range: Word,
     ) -> Result<Option<()>, Self::DataError> {
         todo!()
     }
