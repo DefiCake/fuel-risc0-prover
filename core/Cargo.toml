@@ -22,6 +22,7 @@ fuel-types = { workspace = true }
 fuel-vm = { workspace = true }
 hex = { workspace = true }
 itertools = { workspace = true }
+parking_lot = { workspace = true }
 postcard = { workspace = true, features = ["use-std", "alloc"] }
 primitive-types = { workspace = true }
 serde = { workspace = true }

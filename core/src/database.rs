@@ -45,13 +45,7 @@ type DatabaseError = Error;
 type DatabaseResult<T> = Result<T>;
 
 // TODO: Extract `Database` and all belongs into `fuel-core-database`.
-#[cfg(feature = "rocksdb")]
-use crate::state::rocks_db::RocksDb;
-#[cfg(feature = "rocksdb")]
-use std::path::Path;
 use strum::EnumCount;
-#[cfg(feature = "rocksdb")]
-use tempfile::TempDir;
 
 // Storages implementation
 // TODO: Move to separate `database/storage` folder, because it is only implementation of storages traits.
@@ -417,8 +411,6 @@ impl AsRef<Database> for Database {
 }
 
 /// Construct an ephemeral database
-/// uses rocksdb when rocksdb features are enabled
-/// uses in-memory when rocksdb features are disabled
 impl Default for Database {
     fn default() -> Self {
         {

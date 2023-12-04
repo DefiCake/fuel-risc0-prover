@@ -3759,6 +3759,7 @@ dependencies = [
  "fuel-vm",
  "hex",
  "itertools 0.10.5",
+ "parking_lot",
  "postcard",
  "primitive-types",
  "serde",

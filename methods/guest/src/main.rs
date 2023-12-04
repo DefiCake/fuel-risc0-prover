@@ -13,7 +13,7 @@ pub fn main() {
     env::stdin().read_to_end(&mut input).unwrap();
 
     // let _interpreter: Interpreter<u64, fuel_tx::Script> = Default::default();
-    let _interpreter = prover_core::initialize_interpreter();
+    // let _interpreter = prover_core::initialize_interpreter();
 
     let hash = Sha256::new().chain_update(&input).finalize().to_vec();
 

@@ -35,6 +35,7 @@ primitive-types = "0.12"
 risc0-build = { git = "https://github.com/risc0/risc0", branch = "release-0.19" }
 risc0-zkvm = { git = "https://github.com/risc0/risc0", branch = "release-0.19", default-features = false }
 methods = { path = "./methods", package = "methods" }
+parking_lot = "0.12"
 postcard = "1.0"
 prover-core = { path = "./core" }
 serde = {version = "1.0.188", default-features = false}
