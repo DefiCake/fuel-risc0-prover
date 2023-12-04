@@ -2,11 +2,15 @@ use anyhow::{Context, Result};
 use clap::Parser;
 use ethabi::ParamType;
 use methods::{X509_ELF, X509_ID};
-use risc0_zkvm::{Executor, ExecutorEnv};
+use risc0_zkvm::{ExecutorImpl, ExecutorEnv};
 use std::{
     io::{BufReader, Read},
     path::PathBuf,
 };
+
+const OUTPUT_PARAM_TYPES: [ParamType; 1] = [
+  ParamType::FixedBytes(32),
+];
 
 #[derive(Parser)]
 struct Args {
@@ -27,10 +31,10 @@ fn main() -> Result<()> {
         .read_to_end(&mut buf)
         .expect("Could not read from buffer");
 
-    let env = ExecutorEnv::builder().add_input(&buf).build().unwrap();
+    let env = ExecutorEnv::builder().write_slice(&buf).build().unwrap();
 
     // Next, we make an executor, loading the (renamed) ELF binary.
-    let mut exec = Executor::from_elf(env, X509_ELF).context("Failed to instantiate executor")?;
+    let mut exec = ExecutorImpl::from_elf(env, X509_ELF).context("Failed to instantiate executor")?;
     // let mut exec = default_executor_from_elf(env, X509_ELF).unwrap();
 
     // Run the executor to produce a session.
@@ -44,7 +48,10 @@ fn main() -> Result<()> {
     receipt.verify(X509_ID).unwrap();
 
     // We can extract the output of the journal
-    let out = ethabi::decode(&[ParamType::FixedBytes(32)], &receipt.journal)?;
+    let out = ethabi::decode(
+        &OUTPUT_PARAM_TYPES,
+        &receipt.journal.bytes
+    ).unwrap();
 
     println!(
         "Hash of snapshot {:?}",
