@@ -15,6 +15,11 @@ pub mod state;
 use fuel_core_chain_config::ChainConfig;
 use database::Database;
 
+#[derive(Clone, Debug)]
+struct MockRelayer {
+  _database: Database,
+}
+
 pub fn initialize_interpreter(json: &str) -> Database {   
     let config: ChainConfig = serde_json::from_str(json).expect("Could not parse ChainConfig JSON");
 
@@ -22,6 +27,14 @@ pub fn initialize_interpreter(json: &str) -> Database {
     let _initial_height = initial_state.height.expect("Could not load initial height");
     let database = Database::in_memory();
     database.init(&config).expect("database.init() failed");
+
+    let _relayer: MockRelayer = MockRelayer { _database: database.clone() };
+
+    // let executor: Executor<MockRelayer> = Executor {
+    //     relayer,
+    //     database: database.clone(),
+    //     config: Arc::new(Default::default()),
+    // };
 
     database
 }
