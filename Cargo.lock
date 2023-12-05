@@ -3577,6 +3577,7 @@ dependencies = [
  "fuel-core-chain-config",
  "fuel-core-database",
  "fuel-core-storage",
+ "fuel-core-types",
  "fuel-crypto",
  "fuel-storage",
  "fuel-tx",
