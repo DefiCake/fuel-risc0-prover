@@ -1846,6 +1846,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "fuel-core-executor"
+version = "0.21.0"
+source = "git+https://github.com/DefiCake/fuel-core?rev=fc2b025e5508ad90ea8919f735f2a33743cd6401#fc2b025e5508ad90ea8919f735f2a33743cd6401"
+dependencies = [
+ "anyhow",
+ "fuel-core-chain-config",
+ "fuel-core-storage",
+ "fuel-core-types",
+]
+
+[[package]]
 name = "fuel-core-storage"
 version = "0.21.0"
 source = "git+https://github.com/DefiCake/fuel-core?rev=fc2b025e5508ad90ea8919f735f2a33743cd6401#fc2b025e5508ad90ea8919f735f2a33743cd6401"
@@ -3576,6 +3587,7 @@ dependencies = [
  "enum-iterator",
  "fuel-core-chain-config",
  "fuel-core-database",
+ "fuel-core-executor",
  "fuel-core-storage",
  "fuel-core-types",
  "fuel-crypto",
