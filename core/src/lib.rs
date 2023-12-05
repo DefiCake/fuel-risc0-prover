@@ -1,31 +1,27 @@
-pub mod database;
-pub mod fuel_core_storage_custom;
-pub mod fuel_core_database;
-pub mod primitives;
-pub mod config;
-pub mod serialization;
-pub mod genesis;
-pub mod state;
-pub mod executor;
+// pub mod database;
+// pub mod fuel_core_storage_custom;
+// pub mod fuel_core_database;
+// pub mod primitives;
+// pub mod config;
+// pub mod serialization;
+// pub mod genesis;
+// pub mod state;
+// pub mod executor;
 
-use fuel_vm::interpreter::{Interpreter, InterpreterParams};
-use fuel_tx::Script;
+// use fuel_core_types::{blockchain::primitives::DaBlockHeight, entities::message::Message};
+// use fuel_types::Nonce;
+// use fuel_vm::interpreter::{Interpreter, InterpreterParams};
+// use fuel_tx::Script;
 use fuel_core_chain_config::ChainConfig;
 
-use database::{Database, vm_database::VmDatabase};
-// use vm_database::VmDatabase;
-// use database::Database;
-
-pub fn initialize_interpreter(json: &str) -> Interpreter<VmDatabase, Script> {   
+pub fn initialize_interpreter(json: &str) -> ChainConfig {   
     let config: ChainConfig = serde_json::from_str(json).expect("Could not parse ChainConfig JSON");
-    let db = Database::in_memory();
 
-    todo!()
-    // let vm_db: VmDatabase = VmDatabase { block_height: Default::default(), coinbase: Default::default(), database: db };
+    // let initial_state = config.clone().initial_state.expect("Could not load initial state");
+    // let initial_height = initial_state.height.expect("Could not load initial height");
+    // let database = Database::in_memory();
 
-    // let interpreter: Interpreter<VmDatabase, Script> = Interpreter::with_storage(vm_db, InterpreterParams::default());
-
-    // interpreter   
+    config
 }
 
 #[cfg(test)]
@@ -36,9 +32,8 @@ mod tests {
 
     #[test]
     fn test_initialize_interpreter() {
-        todo!();
 
-        let _ = initialize_interpreter(TEST_SNAPSHOT);        
+        let _executor = initialize_interpreter(TEST_SNAPSHOT);        
         // let interpreter = initialize_interpreter();
 
         // let storage = interpreter.as_ref();

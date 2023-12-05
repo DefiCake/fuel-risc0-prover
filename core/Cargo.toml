@@ -10,16 +10,15 @@ derive_more = { workspace = true }
 enum-iterator = { workspace = true }
 fuel-core-chain-config = { workspace = true }
 fuel-core-database = { workspace = true }
-fuel-core-executor = { workspace = true }
-fuel-core-services = { workspace = true }
+# fuel-core-executor = { workspace = true }
+# fuel-core-services = { workspace = true }
 fuel-core-storage = { workspace = true }
-fuel-core-types = { workspace = true }
-fuel-core-txpool = { workspace = true }
-fuel-crypto = { workspace = true }
-fuel-storage = { workspace = true }
-fuel-tx = { workspace = true }
-fuel-types = { workspace = true }
-fuel-vm = { workspace = true }
+# fuel-core-types = { workspace = true }
+# fuel-core-txpool = { workspace = true }
+fuel-crypto = { workspace = true, default-features = false }
+fuel-storage = { workspace = true, default-features = false }
+fuel-tx = { workspace = true, default-features = false }
+fuel-types = { workspace = true, default-features = false }
 hex = { workspace = true }
 itertools = { workspace = true }
 parking_lot = { workspace = true }

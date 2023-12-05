@@ -18,13 +18,14 @@ use fuel_core_storage::{
     StorageInspect,
     StorageMutate,
 };
-use fuel_core_txpool::types::TxId;
+// use fuel_core_txpool::types::TxId;
 use fuel_core_types::{
     entities::coins::coin::CompressedCoin,
     fuel_tx::{
         Address,
         Bytes32,
         UtxoId,
+        TxId
     },
 };
 use std::borrow::Cow;
