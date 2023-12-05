@@ -27,7 +27,8 @@ use fuel_core_storage::{
     StorageAsRef,
     StorageInspect,
 };
-use fuel_core_txpool::types::ContractId;
+use fuel_core_types::fuel_tx::ContractId;
+
 #[allow(unused_imports)]
 use fuel_core_types::{
     blockchain::{
@@ -215,13 +216,13 @@ pub struct ExecutionOptions {
     pub utxo_validation: bool,
 }
 
-impl From<&crate::service::Config> for ExecutionOptions {
-    fn from(value: &crate::service::Config) -> Self {
-        Self {
-            utxo_validation: value.utxo_validation,
-        }
-    }
-}
+// impl From<&crate::service::Config> for ExecutionOptions {
+//     fn from(value: &crate::service::Config) -> Self {
+//         Self {
+//             utxo_validation: value.utxo_validation,
+//         }
+//     }
+// }
 
 impl From<&Config> for ExecutionOptions {
     fn from(value: &Config) -> Self {
@@ -239,8 +240,8 @@ where
     /// Executes the block and commits the result of the execution into the inner `Database`.
     pub fn execute_and_commit(
         &self,
-        block: fuel_core_types::services::executor::ExecutionBlock,
-        options: ExecutionOptions,
+        _block: fuel_core_types::services::executor::ExecutionBlock,
+        _options: ExecutionOptions,
     ) -> ExecutorResult<ExecutionResult> {
         todo!()
         // let component = match block {
@@ -259,17 +260,6 @@ where
         //     self.execute_without_commit(component, options)?.into();
         // db_transaction.commit()?;
         // Ok(result)
-    }
-}
-
-#[cfg(test)]
-impl Executor<Database> {
-    fn test(database: Database, config: Config) -> Self {
-        Self {
-            relayer: database.clone(),
-            database,
-            config: Arc::new(config),
-        }
     }
 }
 
@@ -448,8 +438,8 @@ where
         };
 
         let ExecutionData {
-            coinbase,
-            used_gas,
+            coinbase: _,
+            used_gas: _,
             message_ids,
             tx_status,
             skipped_transactions,
@@ -1450,7 +1440,7 @@ where
                 .copied()
                 .map(|result| FuelBacktrace::from_vm_error(vm, result))
             {
-                let sp = usize::try_from(backtrace.registers()[RegId::SP]).expect(
+                let _sp = usize::try_from(backtrace.registers()[RegId::SP]).expect(
                     "The `$sp` register points to the memory of the VM. \
                     Because the VM's memory is limited by the `usize` of the system, \
                     it is impossible to lose higher bits during truncation.",

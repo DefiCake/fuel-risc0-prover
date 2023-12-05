@@ -6,7 +6,7 @@ pub mod database;
 // pub mod serialization;
 // pub mod genesis;
 pub mod state;
-// pub mod executor;
+pub mod executor;
 
 // use fuel_core_types::{blockchain::primitives::DaBlockHeight, entities::message::Message};
 // use fuel_types::Nonce;
