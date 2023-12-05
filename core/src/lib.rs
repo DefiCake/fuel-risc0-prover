@@ -1,11 +1,11 @@
-// pub mod database;
+pub mod database;
 // pub mod fuel_core_storage_custom;
 // pub mod fuel_core_database;
 // pub mod primitives;
 // pub mod config;
 // pub mod serialization;
 // pub mod genesis;
-// pub mod state;
+pub mod state;
 // pub mod executor;
 
 // use fuel_core_types::{blockchain::primitives::DaBlockHeight, entities::message::Message};
@@ -13,15 +13,17 @@
 // use fuel_vm::interpreter::{Interpreter, InterpreterParams};
 // use fuel_tx::Script;
 use fuel_core_chain_config::ChainConfig;
+use database::Database;
 
-pub fn initialize_interpreter(json: &str) -> ChainConfig {   
+pub fn initialize_interpreter(json: &str) -> Database {   
     let config: ChainConfig = serde_json::from_str(json).expect("Could not parse ChainConfig JSON");
 
-    // let initial_state = config.clone().initial_state.expect("Could not load initial state");
-    // let initial_height = initial_state.height.expect("Could not load initial height");
-    // let database = Database::in_memory();
+    let initial_state = config.clone().initial_state.expect("Could not load initial state");
+    let _initial_height = initial_state.height.expect("Could not load initial height");
+    let database = Database::in_memory();
+    database.init(&config).expect("database.init() failed");
 
-    config
+    database
 }
 
 #[cfg(test)]

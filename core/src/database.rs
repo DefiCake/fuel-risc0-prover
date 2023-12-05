@@ -54,8 +54,6 @@ pub mod code_root;
 pub mod contracts;
 pub mod message;
 pub mod receipts;
-#[cfg(feature = "relayer")]
-pub mod relayer;
 pub mod sealed_block;
 pub mod state;
 
