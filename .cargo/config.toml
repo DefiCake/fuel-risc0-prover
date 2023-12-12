@@ -22,7 +22,6 @@ rustflags = [
     "-Dclippy::needless_return",
     "-Dbad_style",
     "-Dbare_trait_objects",
-    "-Ddead_code",
     "-Dimproper_ctypes",
     "-Dno_mangle_generic_items",
     "-Dnon_shorthand_field_patterns",

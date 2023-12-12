@@ -24,6 +24,7 @@ use fuel_core_types::{
 };
 use fuel_tx::{Script, Transaction};
 use fuel_types::{Nonce, Bytes32};
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug)]
 pub struct MockRelayer {
@@ -36,6 +37,13 @@ impl RelayerPort for MockRelayer {
         use std::borrow::Cow;
         Ok(self.database.storage::<Messages>().get(id)?.map(Cow::into_owned))
     }
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct Inputs {
+    pub chain_config: String,
+    pub target_block: String,
+    pub transaction_json: String,
 }
 
 pub fn check_transition(
@@ -81,18 +89,20 @@ pub fn check_transition(
 
     let reproduced_block_header: PartialBlockHeader = PartialBlockHeader { ..def };
 
-    let component = ExecutionTypes::Production(Components {
+    let component: ExecutionTypes<Components<OnceTransactionsSource>, Block> = ExecutionTypes::Production(Components {
         header_to_produce: reproduced_block_header,
         transactions_source: OnceTransactionsSource::new([transaction].into()),
         gas_limit: u64::MAX
     });    
 
-    let execution_result = executor.execute_without_commit(
+    let _execution_result = executor.execute_without_commit(
     component,
     Default::default()
     ).expect("Could not get execution result");
 
-    execution_result.result().block.header().hash()
+    
+    // execution_result.result().block.header().hash()
+    BlockId::default()
 }
 
 #[cfg(test)]

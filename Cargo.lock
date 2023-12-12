@@ -2334,6 +2334,7 @@ dependencies = [
  "ethers",
  "hex",
  "methods",
+ "prover-core",
  "risc0-build",
  "risc0-zkvm 0.19.1",
  "serde",

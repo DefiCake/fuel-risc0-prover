@@ -2,6 +2,7 @@ use anyhow::{Context, Result};
 use clap::Parser;
 use ethabi::ParamType;
 use methods::{X509_ELF, X509_ID};
+use prover_core::Inputs;
 use risc0_zkvm::{ExecutorImpl, ExecutorEnv};
 use std::{
     io::{BufReader, Read},
@@ -31,7 +32,18 @@ fn main() -> Result<()> {
         .read_to_end(&mut buf)
         .expect("Could not read from buffer");
 
-    let env = ExecutorEnv::builder().write_slice(&buf).build().unwrap();
+    let inputs = Inputs {
+        chain_config: String::from(include_str!("../../core/res/test_snapshot.json")),
+        target_block: String::from(include_str!("../../core/res/test_target_block.json")),
+        transaction_json: String::from(include_str!("../../core/res/test_transaction.json")),
+    };
+
+    let env = 
+        ExecutorEnv::builder()
+            .write(&inputs)
+            .unwrap()
+            .build()
+            .unwrap();
 
     // Next, we make an executor, loading the (renamed) ELF binary.
     let mut exec = ExecutorImpl::from_elf(env, X509_ELF).context("Failed to instantiate executor")?;
