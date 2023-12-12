@@ -1892,6 +1892,7 @@ dependencies = [
  "fuel-types",
  "k256",
  "p256",
+ "rand",
  "serde",
  "sha2 0.10.8",
  "zeroize",
@@ -1941,6 +1942,7 @@ dependencies = [
  "fuel-types",
  "hashbrown 0.14.3",
  "itertools 0.10.5",
+ "rand",
  "serde",
  "serde_json",
  "strum 0.24.1",
@@ -1954,6 +1956,7 @@ source = "git+https://github.com/DefiCake/fuel-vm?rev=bf8196df278cf03cd15b453e58
 dependencies = [
  "fuel-derive",
  "hex",
+ "rand",
  "serde",
 ]
 
@@ -1962,6 +1965,7 @@ name = "fuel-vm"
 version = "0.43.1"
 source = "git+https://github.com/DefiCake/fuel-vm?rev=bf8196df278cf03cd15b453e5837f88914c10ec4#bf8196df278cf03cd15b453e5837f88914c10ec4"
 dependencies = [
+ "anyhow",
  "async-trait",
  "backtrace",
  "bitflags 2.4.1",
@@ -1980,6 +1984,7 @@ dependencies = [
  "paste",
  "percent-encoding",
  "primitive-types",
+ "rand",
  "serde",
  "sha3",
  "static_assertions",

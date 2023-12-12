@@ -1,0 +1,23 @@
+{
+  "header": {
+    "application": {
+      "da_height": 0,
+      "generated": {
+        "transactions_count": 2,
+        "message_receipt_count": 0,
+        "transactions_root": "8799d9cf448a1d7c0c807d2fe36c8d166f894ac19126dbb6db17b21dc77cd7c6",
+        "message_receipt_root": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "consensus": {
+      "prev_root": "4ca316d9b00c87ae892466d7fc2cf1bcb2d5dd836ae98f9b6b8ec07ebadd55c1",
+      "height": 1,
+      "time": [64, 0, 0, 0, 101, 120, 54, 108],
+      "generated": { "application_hash": "6b2bca96a1073d77532ab1da400b4a8e2bfbc21dd5dde269024ab39330b668ea" }
+    }
+  },
+  "transactions": [
+    "253fd6aa0d1dd040e3695294842c0f3e877434b7e6d6506c0bd58c0f8b97377a",
+    "8cf76342f6c4b2d74b3a18cd3af648374ea1306370b5928da5403ce104616a9e"
+  ]
+}

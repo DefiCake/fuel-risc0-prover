@@ -13,7 +13,7 @@ fuel-core-database = { workspace = true }
 fuel-core-executor = { workspace = true }
 # fuel-core-services = { workspace = true }
 fuel-core-storage = { workspace = true }
-fuel-core-types = { workspace = true }
+fuel-core-types = { workspace = true, features = ["test-helpers"] }
 # fuel-core-txpool = { workspace = true }
 fuel-crypto = { workspace = true, default-features = false }
 fuel-storage = { workspace = true, default-features = false }
