@@ -243,23 +243,7 @@ where
         _block: fuel_core_types::services::executor::ExecutionBlock,
         _options: ExecutionOptions,
     ) -> ExecutorResult<ExecutionResult> {
-        todo!()
-        // let component = match block {
-        //     ExecutionTypes::DryRun(_) => {
-        //         panic!("It is not possible to commit the dry run result");
-        //     }
-        //     ExecutionTypes::Production(block) => ExecutionTypes::Production(Components {
-        //         header_to_produce: block.header,
-        //         transactions_source: OnceTransactionsSource::new(block.transactions),
-        //         gas_limit: u64::MAX,
-        //     }),
-        //     ExecutionTypes::Validation(block) => ExecutionTypes::Validation(block),
-        // };
-
-        // let (result, db_transaction) =
-        //     self.execute_without_commit(component, options)?.into();
-        // db_transaction.commit()?;
-        // Ok(result)
+        todo!("Does not need commit");
     }
 }
 
@@ -403,22 +387,6 @@ where
                 )?;
                 (block, execution_data)
             },
-            // ExecutionTypes::DryRun(component) => {
-            //     let mut block =
-            //         PartialFuelBlock::new(component.header_to_produce, vec![]);
-            //     let component = PartialBlockComponent::from_component(
-            //         &mut block,
-            //         component.transactions_source,
-            //         component.gas_limit,
-            //     );
-
-            //     let execution_data = self.execute_block(
-            //         &mut block_db_transaction,
-            //         ExecutionType::DryRun(component),
-            //         options,
-            //     )?;
-            //     (block, execution_data)
-            // }
             ExecutionTypes::Production(component) => {
                 let mut block =
                     PartialFuelBlock::new(component.header_to_produce, vec![]);
@@ -442,7 +410,7 @@ where
             }
         };
 
-        todo!("execute_inner tail");
+        todo!("execute_inner");
 
         // let ExecutionData {
         //     coinbase: _,
@@ -935,7 +903,6 @@ where
 
         todo!("execute_create_or_script tail");
 
-        
         let reverted = vm_result.should_revert();
 
         let (state, mut tx, receipts) = vm_result.into_inner();

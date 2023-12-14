@@ -1,6 +1,6 @@
 mod types;
 
-use methods::{ X509_ELF, X509_ID };
+use methods::{ PROVER_ELF, PROVER_ID };
 use clap::Parser;
 use std::{ io::Write, time::Duration };
 
@@ -57,7 +57,7 @@ async fn main() -> Result<()> {
 
   let bonsai_client = get_client_from_parts(bonsai_api_url.to_string(), bonsai_api_key.to_string()).await?;
 
-  (match put_image(bonsai_client.clone(), image_id.clone(), X509_ELF.clone().to_vec()).await {
+  (match put_image(bonsai_client.clone(), image_id.clone(), PROVER_ELF.clone().to_vec()).await {
     Ok(()) | Err(SdkErr::ImageIdExists) => Ok::<_, anyhow::Error>(()),
     Err(err) => Err(err.into()),
   })?;
@@ -69,7 +69,7 @@ async fn main() -> Result<()> {
 }
 
 fn serialize_image_id() -> anyhow::Result<String> {
-  let image_id = hex::encode(Vec::from(bytemuck::cast::<[u32; 8], [u8; 32]>(X509_ID)));
+  let image_id = hex::encode(Vec::from(bytemuck::cast::<[u32; 8], [u8; 32]>(PROVER_ID)));
 
   let mut file = std::fs::File::create("res/IMAGE_ID")?;
   file.write_all(image_id.as_bytes())?;

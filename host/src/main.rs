@@ -1,7 +1,7 @@
 use anyhow::{Context, Result};
 use clap::Parser;
 use ethabi::ParamType;
-use methods::{X509_ELF, X509_ID};
+use methods::{PROVER_ELF, PROVER_ID};
 use prover_core::Inputs;
 use risc0_zkvm::{ExecutorImpl, ExecutorEnv};
 use std::{
@@ -46,8 +46,8 @@ fn main() -> Result<()> {
             .unwrap();
 
     // Next, we make an executor, loading the (renamed) ELF binary.
-    let mut exec = ExecutorImpl::from_elf(env, X509_ELF).context("Failed to instantiate executor")?;
-    // let mut exec = default_executor_from_elf(env, X509_ELF).unwrap();
+    let mut exec = ExecutorImpl::from_elf(env, PROVER_ELF).context("Failed to instantiate executor")?;
+    // let mut exec = default_executor_from_elf(env, PROVER_ELF).unwrap();
 
     // Run the executor to produce a session.
     let session = exec.run().unwrap();
@@ -57,7 +57,7 @@ fn main() -> Result<()> {
 
     // Optional: Verify receipt to confirm that recipients will also be able to
     // verify your receipt
-    receipt.verify(X509_ID).unwrap();
+    receipt.verify(PROVER_ID).unwrap();
 
     // We can extract the output of the journal
     let out = ethabi::decode(
