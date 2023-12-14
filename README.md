@@ -1,53 +1,132 @@
-# RISC Zero Rust Starter Template
+# Bonsai Foundry Template
 
-Welcome to the RISC Zero Rust Starter Template! This template is intended to give you a starting point for building a project using the RISC Zero zkVM. Throughout the code are comments labelled `TODO` in places where we expect projects will need to modify the code.
-To better understand the concepts behind this template, check out our [Understanding the Starter Template] explainer.
+> **Note: This software is not production ready. Do not use in production.**
 
-TODO: Replace this README with a README for your project
-TODO: Verify whether the included `.gitignore`, `LICENSE`, and `rust-toolchain` files are appropriate to your project
+Starter template for writing an application using [Bonsai].
+
+This repository implements an application on Ethereum utilizing Bonsai as a [coprocessor] to the smart contract application.
+It provides a starting point for building powerful new applications on Ethereum that offload computationally intensive, or difficult to implement, tasks to be proven by the [RISC Zero] [zkVM], with verifiable results sent to your Ethereum contract.
+
+*For a 60 second overview of how this template and off-chain computation with Bonsai work, [check out the video here](https://www.youtube.com/watch?v=WDS8X8H9mIk).*
+
+## Overview
+
+The picture below shows a simplified overview of how users can integrate Bonsai into their Ethereum smart contracts:
+
+![Bonsai Relay Diagram](images/BonsaiRelay.png)
+
+1. Users can delegate their smart contract's logic to Bonsai. The [Bonsai Relay Contract](lib/risc0/bonsai/ethereum/contracts/BonsaiRelay.sol) provides a `Request Callback` interface. This interface, accessible both *off-chain* (through HTTP REST API) and *on-chain*, emits an event detected by the `Ethereum Bonsai Relayer`.
+2. The `Ethereum Bonsai Relayer` sends the proof request to Bonsai.
+3. Bonsai generates a Snark proof and its result, encapsulated in a journal.
+4. The `Ethereum Bonsai Relayer` submits this proof and journal on-chain to the `Bonsai Relay Contract` for validation.
+5. If validated, the journal is dispatched to the user's smart contract via the specified callback.
+
+## Dependencies
+First, [install Rust] and [Foundry], and then restart your terminal. Next, you will need to install the `cargo risczero` tool.
+We'll use `cargo binstall` to get `cargo-risczero` installed. See [cargo-binstall] for more details.
+
+```bash
+cargo install cargo-binstall
+cargo binstall cargo-risczero
+```
+
+Next we'll need to install the `risc0` toolchain with:
+
+```
+cargo risczero install
+```
 
 ## Quick Start
+First, install the RISC Zero toolchain using the instructions above.
 
-First, make sure [rustup](https://rustup.rs) is installed. This project uses a [nightly](https://doc.rust-lang.org/book/appendix-07-nightly-rust.html) version of [Rust](https://doc.rust-lang.org/book/ch01-01-installation.html). The [`rust-toolchain`](rust-toolchain) file will be used by `cargo` to automatically install the correct version.
+Now, you can initialize a new Bonsai project at a location of your choosing:
 
-To build all methods and execute the method within the zkVM, run the following command:
-
+```bash
+forge init -t risc0/bonsai-foundry-template ./my-project
 ```
-cargo run
+Congratulations! You've just built your first Bonsai project.
+Your new project consists of:
+- a [`zkVM program`] (written in Rust), which specifies a computation that will be proven
+- a [`contract`] (written in Solidity), which receives the response
+
+Requesting a proof can be done via both *off-chain* or *on-chain* requests.
+
+[install Rust]: https://doc.rust-lang.org/cargo/getting-started/installation.html
+[Foundry]: https://getfoundry.sh/
+[cargo-binstall]: https://github.com/cargo-bins/cargo-binstall#cargo-binaryinstall
+[`zkVM program`]: https://github.com/risc0/bonsai-foundry-template/tree/main/methods/guest/src/bin
+[`contract`]: https://github.com/risc0/bonsai-foundry-template/tree/main/contracts
+
+### Test Your Project
+- Use `cargo build` to test compilation of your zkVM program.
+- Use `cargo test` to run the tests in your zkVM program.
+- Use `forge test` to test your Solidity contracts and their interaction with your zkVM program.
+
+### Configuring Bonsai
+***Note:*** *The Bonsai proving service is still in early Alpha. To request an API key [complete the form here](https://bonsai.xyz/apply).*
+
+With the Bonsai proving service, you can produce a [Groth16 SNARK proof] that is verifiable on-chain.
+You can get started by setting the following environment variables with your API key and associated URL.
+
+```bash
+export BONSAI_API_KEY="YOUR_API_KEY" # see form linked above
+export BONSAI_API_URL="BONSAI_URL" # provided with your api key
 ```
 
-This is an empty template, and so there is no expected output (until you modify the code).
+Now if you run `forge test` with `RISC0_DEV_MODE=false`, the test will run as before, but will additionally use the fully verifying `BonsaiRelay` contract instead of `BonsaiTestRelay` and will request a SNARK receipt from Bonsai.
 
-### Running proofs remotely on Bonsai
-
-*Note: The Bonsai proving service is still in early Alpha; an API key is required for access. [Click here to request access].*
-
-If you have access to the URL and API key to Bonsai you can run your proofs
-remotely. To prove in Bonsai mode, invoke `cargo run` with two additional
-environment variables:
-
-```
-BONSAI_API_KEY="YOUR_API_KEY" BONSAI_API_URL="BONSAI_URL" cargo run
+```bash
+RISC0_DEV_MODE=false forge test
 ```
 
-[Click here to request access]: https://docs.google.com/forms/d/e/1FAIpQLSf9mu18V65862GS4PLYd7tFTEKrl90J5GTyzw_d14ASxrruFQ/viewform
+## Next Steps
+To build your application, you'll need to make changes in two folders:
+- write the code you want proven in the [methods] folder
+- write the on-chain part of your project in the [contracts] folder
 
-## How to create a project based on this template
-
-Search this template for the string `TODO`, and make the necessary changes to implement the required feature described by the `TODO` comment. Some of these changes will be complex, and so we have a number of instructional resources to assist you in learning how to write your own code for the RISC Zero zkVM:
- * The [Getting Started section](https://www.risczero.com/docs) of the [RISC Zero website](https://www.risczero.com) is a great place to get started. There are additional explainers and overviews on our website as well.
- * Example projects are available in the [examples folder](https://github.com/risc0/risc0/tree/main/examples) of this repository.
- * Reference documentation for our Rust crates is available at [docs.rs], including the [RISC Zero zkVM crate](https://docs.rs/risc0-zkvm), the [cargo risczero crate](https://docs.rs/cargo-risczero), the [RISC Zero build crate](https://docs.rs/risc0-build), and others (the full list is available at [https://github.com/risc0/risc0/blob/main/README.md]).
- * Our [main repository](https://www.github.com/risc0/risc0).
+Then, you're ready to [deploy your project]. <br/>
 
 
-## Contributor's Guide
-We welcome contributions to documentation and code via PRs and GitHub Issues on our [main repository](http://www.github.com/risc0) or any of our other repositories.
+## Project Structure
 
-## Video Tutorial
-For a walk-through of how to build with this template, check out this [excerpt from our workshop at ZK HACK III](https://www.youtube.com/watch?v=Yg_BGqj_6lg&list=PLcPzhUaCxlCgig7ofeARMPwQ8vbuD6hC5&index=5).
+Below are the primary files in the project directory
 
-## Questions, Feedback, and Collaborations
-We'd love to hear from you on [Discord](https://discord.gg/risczero) or [Twitter](https://twitter.com/risczero).
+```text
+.
+├── Cargo.toml                      // Definitions for cargo and rust
+├── foundry.toml                    // Definitions for foundry
+├── contracts                       // Your Ethereum contracts live here
+│   ├── BonsaiStarter.sol           // Starter template for basic callback contract
+│   └── BonsaiStarterLowLevel.sol   // Starter template for low-level callback contract
+├── tests                           // Your Ethereum contract tests live here
+│   ├── BonsaiStarter.t.sol         // Tests for basic callback contract
+│   └── BonsaiStarterLowLevel.t.sol // Tests for low-level callback contract
+└── methods                         // [zkVM guest programs] are built here
+    ├── Cargo.toml
+    ├── build.rs                    // Instructions for the risc0-build rust crate
+    ├── guest                       // A rust crate containing your [zkVM guest programs]
+    │   ├── Cargo.toml
+    │   └── src
+    │       └── bin                 // Your [zkVM guest programs] live here
+    │           └── fibonacci.rs    // Example [guest program] for fibonacci number calculation
+    └── src
+        ├── main.rs                 // Glue binary for locally testing Bonsai applications
+        └── lib.rs                  // Built RISC Zero guest programs are compiled into here
+```
 
-[Understanding the Starter Template]: https://www.risczero.com/docs/examples/understanding_template
+
+[methods]: /methods
+[contracts]: /contracts
+[deploy your project]: /deployment-guide.md
+[coprocessor]: https://twitter.com/RiscZero/status/1677316664772132864
+[Bonsai]: https://dev.bonsai.xyz/
+[Foundry]: https://getfoundry.sh/
+[Groth16 SNARK proof]: https://www.risczero.com/news/on-chain-verification
+[RISC Zero examples]: https://github.com/risc0/risc0/tree/main/examples
+[RISC Zero]: https://www.risczero.com/
+[RISC-V]: https://www.risczero.com/docs/reference-docs/about-risc-v
+[https://book.getfoundry.sh/forge/tests]: https://book.getfoundry.sh/forge/tests
+[receipt]: https://dev.risczero.com/zkvm/developer-guide/receipts
+[risc0/risc0]: https://github.com/risc0/risc0/tree/main/bonsai/ethereum-relay
+[zkVM guest program]: https://www.dev.risczero.com/terminology#guest-program
+[zkVM]: https://www.dev.risczero.com/terminology#zero-knowledge-virtual-machine-zkvm
