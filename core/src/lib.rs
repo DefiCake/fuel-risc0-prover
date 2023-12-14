@@ -1,19 +1,9 @@
 pub mod database;
-// pub mod fuel_core_storage_custom;
-// pub mod fuel_core_database;
-// pub mod primitives;
-// pub mod config;
-// pub mod serialization;
-// pub mod genesis;
 pub mod state;
 pub mod executor;
 
 use std::sync::Arc;
 
-// use fuel_core_types::{blockchain::primitives::DaBlockHeight, entities::message::Message};
-// use fuel_types::Nonce;
-// use fuel_vm::interpreter::{Interpreter, InterpreterParams};
-// use fuel_tx::Script;
 use fuel_core_chain_config::ChainConfig;
 use database::Database;
 use executor::{Executor, RelayerPort, OnceTransactionsSource};
