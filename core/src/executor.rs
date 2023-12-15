@@ -188,7 +188,7 @@ impl TransactionsSource for OnceTransactionsSource {
 /// the transactions contained in the block and persist changes to the underlying database as needed.
 /// In production mode, block fields like transaction commitments are set based on the executed txs.
 /// In validation mode, the processed block commitments are compared with the proposed block.
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct Executor<R>
 where
     R: RelayerPort + Clone,
@@ -892,7 +892,7 @@ where
         );
 
 
-        // This is where musl_memcpy.c is being used
+
         let vm_result: StateTransition<_> = vm
             .transact(checked_tx.clone())
             .map_err(|error| ExecutorError::VmExecution {
@@ -901,7 +901,8 @@ where
             })?
             .into();
 
-        todo!("execute_create_or_script tail");
+        // todo!("execute_create_or_script tail");
+            
 
         let reverted = vm_result.should_revert();
 

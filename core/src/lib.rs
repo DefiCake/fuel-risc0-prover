@@ -16,7 +16,7 @@ use fuel_tx::{Script, Transaction};
 use fuel_types::{Nonce, Bytes32};
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct MockRelayer {
   database: Database,
 }

@@ -28,11 +28,6 @@ use serde::{
     Serialize,
 };
 use std::{
-    fmt::{
-        self,
-        Debug,
-        Formatter,
-    },
     marker::Send,
     ops::Deref,
     sync::Arc,
@@ -137,7 +132,7 @@ impl Column {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct Database {
     data: DataSource,
     // used for RAII
@@ -149,12 +144,6 @@ type DropFn = Box<dyn FnOnce() + Send + Sync>;
 struct DropResources {
     // move resources into this closure to have them dropped when db drops
     drop: Option<DropFn>,
-}
-
-impl fmt::Debug for DropResources {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "DropResources")
-    }
 }
 
 impl<F: 'static + FnOnce() + Send + Sync> From<F> for DropResources {

@@ -7,7 +7,6 @@ use fuel_core_storage::{
     Result as StorageResult,
 };
 use std::{
-    fmt::Debug,
     ops::{
         Deref,
         DerefMut,
@@ -15,7 +14,7 @@ use std::{
     sync::Arc,
 };
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct DatabaseTransaction {
     // The primary datastores
     changes: Arc<MemoryTransactionView>,

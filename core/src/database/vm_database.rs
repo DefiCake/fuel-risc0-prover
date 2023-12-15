@@ -38,7 +38,7 @@ use primitive_types::U256;
 use std::borrow::Cow;
 
 /// Used to store metadata relevant during the execution of a transaction
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct VmDatabase {
     current_block_height: BlockHeight,
     current_timestamp: Tai64,
