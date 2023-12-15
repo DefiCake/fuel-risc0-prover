@@ -1,12 +1,13 @@
 pub mod database;
 pub mod state;
-pub mod executor;
+// pub mod executor;
 
 use std::sync::Arc;
 
 use fuel_core_chain_config::ChainConfig;
 use database::Database;
-use executor::{Executor, RelayerPort, OnceTransactionsSource};
+
+// use executor::{Executor, RelayerPort, OnceTransactionsSource};
 use fuel_core_types::{
     blockchain::{primitives::DaBlockHeight, header::PartialBlockHeader}, 
     entities::message::Message,
@@ -15,6 +16,8 @@ use fuel_core_types::{
 use fuel_tx::{Script, Transaction};
 use fuel_types::{Nonce, Bytes32};
 use serde::{Deserialize, Serialize};
+
+use fuel_core_executor::{executor::{Executor, OnceTransactionsSource}, ports::RelayerPort};
 
 #[derive(Clone)]
 pub struct MockRelayer {
@@ -52,7 +55,7 @@ pub fn check_transition(
 
     let relayer: MockRelayer = MockRelayer { database: database.clone() };
 
-    let executor: Executor<MockRelayer> = Executor {
+    let executor: Executor<MockRelayer, Database> = Executor {
         relayer,
         database: database.clone(),
         config: Arc::new(Default::default()),
@@ -83,16 +86,14 @@ pub fn check_transition(
         header_to_produce: reproduced_block_header,
         transactions_source: OnceTransactionsSource::new([transaction].into()),
         gas_limit: u64::MAX
-    });    
+    });   
 
-    let _execution_result = executor.execute_without_commit(
+    let execution_result = executor.execute_without_commit(
     component,
     Default::default()
     ).expect("Could not get execution result");
 
-    
-    // execution_result.result().block.header().hash()
-    BlockId::default()
+    execution_result.result().block.header().hash()
 }
 
 #[cfg(test)]

@@ -1,13 +1,17 @@
-use crate::database::{
-    transaction::DatabaseTransaction,
-    transactions::TransactionIndex,
-    vm_database::VmDatabase,
-    Database,
+mod ports;
+
+pub use ports::{
+    MaybeCheckedTransaction,
+    RelayerPort,
+    TransactionsSource,
 };
-use fuel_core_executor::{
-    refs::ContractRef,
-    Config,
-};
+
+mod refs;
+pub use refs::ContractRef;
+
+mod config;
+pub use config::Config;
+
 use fuel_core_storage::{
     tables::{
         Coins,
@@ -21,15 +25,12 @@ use fuel_core_storage::{
     },
     transactional::{
         StorageTransaction,
-        Transaction as StorageTransactionTrait,
+        Transactional,
     },
     StorageAsMut,
     StorageAsRef,
     StorageInspect,
 };
-use fuel_core_types::fuel_tx::ContractId;
-
-#[allow(unused_imports)]
 use fuel_core_types::{
     blockchain::{
         block::{
@@ -49,10 +50,15 @@ use fuel_core_types::{
     },
     fuel_tx::{
         field::{
+            InputContract,
             Inputs,
+            MintAmount,
+            MintAssetId,
+            OutputContract,
             Outputs,
             TxPointer as TxPointerField,
         },
+        input,
         input::{
             coin::{
                 CoinPredicate,
@@ -66,30 +72,30 @@ use fuel_core_types::{
                 MessageDataSigned,
             },
         },
+        output,
         Address,
         AssetId,
         Bytes32,
         Cacheable,
+        Chargeable,
         Input,
         Mint,
         Output,
         Receipt,
         Transaction,
-        TransactionFee,
         TxId,
         TxPointer,
         UniqueIdentifier,
         UtxoId,
-        ValidityError,
     },
     fuel_types::{
-        canonical::Serialize,
         BlockHeight,
+        ContractId,
         MessageId,
     },
+    fuel_vm,
     fuel_vm::{
         checked_transaction::{
-            CheckError,
             CheckPredicateParams,
             CheckPredicates,
             Checked,
@@ -126,37 +132,12 @@ use fuel_core_types::{
         txpool::TransactionStatus,
     },
 };
-use fuel_core_types::{
-    fuel_tx::{
-        field::{
-            InputContract,
-            MintAmount,
-            MintAssetId,
-            OutputContract,
-        },
-        input,
-        output,
-        Chargeable,
-    },
-    fuel_vm,
-};
 use parking_lot::Mutex as ParkingMutex;
 use std::{
     borrow::Cow,
-    ops::{
-        Deref,
-        DerefMut,
-    },
     sync::Arc,
 };
 
-mod ports;
-
-pub use ports::{
-    MaybeCheckedTransaction,
-    RelayerPort,
-    TransactionsSource,
-};
 
 pub type ExecutionBlockWithSource<TxSource> = ExecutionTypes<Components<TxSource>, Block>;
 
@@ -188,25 +169,22 @@ impl TransactionsSource for OnceTransactionsSource {
 /// the transactions contained in the block and persist changes to the underlying database as needed.
 /// In production mode, block fields like transaction commitments are set based on the executed txs.
 /// In validation mode, the processed block commitments are compared with the proposed block.
-#[derive(Clone)]
-pub struct Executor<R>
-where
-    R: RelayerPort + Clone,
-{
-    pub database: Database,
+#[derive(Clone, Debug)]
+pub struct Executor<R, D> {
+    pub database: D,
     pub relayer: R,
     pub config: Arc<Config>,
 }
 
 /// Data that is generated after executing all transactions.
-struct ExecutionData {
+pub struct ExecutionData {
     coinbase: u64,
     used_gas: u64,
     tx_count: u16,
     found_mint: bool,
     message_ids: Vec<MessageId>,
     tx_status: Vec<TransactionExecutionStatus>,
-    skipped_transactions: Vec<(TxId, ExecutorError)>,
+    pub skipped_transactions: Vec<(TxId, ExecutorError)>,
 }
 
 /// Per-block execution options
@@ -216,14 +194,6 @@ pub struct ExecutionOptions {
     pub utxo_validation: bool,
 }
 
-// impl From<&crate::service::Config> for ExecutionOptions {
-//     fn from(value: &crate::service::Config) -> Self {
-//         Self {
-//             utxo_validation: value.utxo_validation,
-//         }
-//     }
-// }
-
 impl From<&Config> for ExecutionOptions {
     fn from(value: &Config) -> Self {
         Self {
@@ -232,30 +202,47 @@ impl From<&Config> for ExecutionOptions {
     }
 }
 
-impl<R> Executor<R>
+impl<R, D> Executor<R, D>
 where
     R: RelayerPort + Clone,
+    D: ExecutorDatabaseTrait<D>,
 {
     #[cfg(any(test, feature = "test-helpers"))]
     /// Executes the block and commits the result of the execution into the inner `Database`.
     pub fn execute_and_commit(
         &self,
-        _block: fuel_core_types::services::executor::ExecutionBlock,
-        _options: ExecutionOptions,
+        block: fuel_core_types::services::executor::ExecutionBlock,
+        options: ExecutionOptions,
     ) -> ExecutorResult<ExecutionResult> {
-        todo!("Does not need commit");
+        let component = match block {
+            ExecutionTypes::DryRun(_) => {
+                panic!("It is not possible to commit the dry run result");
+            }
+            ExecutionTypes::Production(block) => ExecutionTypes::Production(Components {
+                header_to_produce: block.header,
+                transactions_source: OnceTransactionsSource::new(block.transactions),
+                gas_limit: u64::MAX,
+            }),
+            ExecutionTypes::Validation(block) => ExecutionTypes::Validation(block),
+        };
+
+        let (result, db_transaction) =
+            self.execute_without_commit(component, options)?.into();
+        db_transaction.commit()?;
+        Ok(result)
     }
 }
 
-impl<R> Executor<R>
+impl<R, D> Executor<R, D>
 where
     R: RelayerPort + Clone,
+    D: ExecutorDatabaseTrait<D>,
 {
     pub fn execute_without_commit<TxSource>(
         &self,
         block: ExecutionBlockWithSource<TxSource>,
         options: ExecutionOptions,
-    ) -> ExecutorResult<UncommittedResult<StorageTransaction<Database>>>
+    ) -> ExecutorResult<UncommittedResult<StorageTransaction<D>>>
     where
         TxSource: TransactionsSource,
     {
@@ -313,7 +300,8 @@ where
     }
 }
 
-mod private {
+// TODO: Make this module private after moving unit tests from `fuel-core` here.
+pub mod block_component {
     use super::*;
 
     pub struct PartialBlockComponent<'a, TxSource> {
@@ -352,18 +340,23 @@ mod private {
         }
     }
 }
-use private::*;
 
-impl<R> Executor<R>
+use block_component::*;
+use fuel_core_storage::vm_storage::VmStorage;
+
+use self::ports::ExecutorDatabaseTrait;
+
+impl<R, D> Executor<R, D>
 where
     R: RelayerPort + Clone,
+    D: ExecutorDatabaseTrait<D>,
 {
     fn execute_inner<TxSource>(
         &self,
         block: ExecutionBlockWithSource<TxSource>,
-        database: &Database,
+        database: &D,
         options: ExecutionOptions,
-    ) -> ExecutorResult<UncommittedResult<StorageTransaction<Database>>>
+    ) -> ExecutorResult<UncommittedResult<StorageTransaction<D>>>
     where
         TxSource: TransactionsSource,
     {
@@ -374,19 +367,26 @@ where
         // a partial header.
         let block = block.map_v(PartialFuelBlock::from);
 
-        // Create a new database transaction.
-        let mut block_db_transaction = database.transaction();
+        // Create a new storage transaction.
+        let mut block_st_transaction = database.transaction();
 
         let (block, execution_data) = match block {
-            ExecutionTypes::Validation(mut block) => {
-                let component = PartialBlockComponent::from_partial_block(&mut block);
+            ExecutionTypes::DryRun(component) => {
+                let mut block =
+                    PartialFuelBlock::new(component.header_to_produce, vec![]);
+                let component = PartialBlockComponent::from_component(
+                    &mut block,
+                    component.transactions_source,
+                    component.gas_limit,
+                );
+
                 let execution_data = self.execute_block(
-                    &mut block_db_transaction,
-                    ExecutionType::Validation(component),
+                    block_st_transaction.as_mut(),
+                    ExecutionType::DryRun(component),
                     options,
                 )?;
                 (block, execution_data)
-            },
+            }
             ExecutionTypes::Production(component) => {
                 let mut block =
                     PartialFuelBlock::new(component.header_to_produce, vec![]);
@@ -396,83 +396,83 @@ where
                     component.gas_limit,
                 );
 
-                
                 let execution_data = self.execute_block(
-                    &mut block_db_transaction,
+                    block_st_transaction.as_mut(),
                     ExecutionType::Production(component),
                     options,
                 )?;
-
                 (block, execution_data)
-            },
-            _ => {
-                unreachable!("No DryRun");
+            }
+            ExecutionTypes::Validation(mut block) => {
+                let component = PartialBlockComponent::from_partial_block(&mut block);
+                let execution_data = self.execute_block(
+                    block_st_transaction.as_mut(),
+                    ExecutionType::Validation(component),
+                    options,
+                )?;
+                (block, execution_data)
             }
         };
 
-        todo!("execute_inner");
+        let ExecutionData {
+            coinbase,
+            used_gas,
+            message_ids,
+            tx_status,
+            skipped_transactions,
+            ..
+        } = execution_data;
 
-        // let ExecutionData {
-        //     coinbase: _,
-        //     used_gas: _,
-        //     message_ids,
-        //     tx_status,
-        //     skipped_transactions,
-        //     ..
-        // } = execution_data;
+        // Now that the transactions have been executed, generate the full header.
 
-        // // Now that the transactions have been executed, generate the full header.
+        let block = block.generate(&message_ids[..]);
 
-        // let block = block.generate(&message_ids[..]);
+        let finalized_block_id = block.id();
 
-        // let finalized_block_id = block.id();
+        // check if block id doesn't match proposed block id
+        if let Some(pre_exec_block_id) = pre_exec_block_id {
+            // The block id comparison compares the whole blocks including all fields.
+            if pre_exec_block_id != finalized_block_id {
+                return Err(ExecutorError::InvalidBlockId)
+            }
+        }
 
-        // // check if block id doesn't match proposed block id
-        // if let Some(pre_exec_block_id) = pre_exec_block_id {
-        //     // The block id comparison compares the whole blocks including all fields.
-        //     if pre_exec_block_id != finalized_block_id {
-        //         return Err(ExecutorError::InvalidBlockId)
-        //     }
-        // }
+        let result = ExecutionResult {
+            block,
+            skipped_transactions,
+            tx_status,
+        };
 
-        // let result = ExecutionResult {
-        //     block,
-        //     skipped_transactions,
-        //     tx_status,
-        // };
+        // ------------ GraphQL API Functionality BEGIN ------------
 
-        // // ------------ GraphQL API Functionality BEGIN ------------
+        // save the status for every transaction using the finalized block id
+        self.persist_transaction_status(&result, block_st_transaction.as_mut())?;
 
-        // // save the status for every transaction using the finalized block id
-        // self.persist_transaction_status(&result, block_db_transaction.deref_mut())?;
+        // save the associated owner for each transaction in the block
+        self.index_tx_owners_for_block(&result.block, block_st_transaction.as_mut())?;
 
-        // // save the associated owner for each transaction in the block
-        // self.index_tx_owners_for_block(&result.block, &mut block_db_transaction)?;
+        // ------------ GraphQL API Functionality   END ------------
 
-        // // ------------ GraphQL API Functionality   END ------------
+        // insert block into database
+        block_st_transaction
+            .as_mut()
+            .storage::<FuelBlocks>()
+            .insert(
+                &finalized_block_id,
+                &result
+                    .block
+                    .compress(&self.config.consensus_parameters.chain_id),
+            )?;
 
-        // // insert block into database
-        // block_db_transaction
-        //     .deref_mut()
-        //     .storage::<FuelBlocks>()
-        //     .insert(
-        //         &finalized_block_id,
-        //         &result
-        //             .block
-        //             .compress(&self.config.consensus_parameters.chain_id),
-        //     )?;
-
-        // // Get the complete fuel block.
-        // Ok(UncommittedResult::new(
-        //     result,
-        //     StorageTransaction::new(block_db_transaction),
-        // ))
+        // Get the complete fuel block.
+        Ok(UncommittedResult::new(result, block_st_transaction))
     }
 
     /// Execute the fuel block with all transactions.
-    fn execute_block<TxSource>(
+    // TODO: Make this function private after moving tests form `fuel-core` here.
+    pub fn execute_block<TxSource>(
         &self,
-        block_db_transaction: &mut DatabaseTransaction,
+        block_st_transaction: &mut D,
         block: ExecutionType<PartialBlockComponent<TxSource>>,
         options: ExecutionOptions,
     ) -> ExecutorResult<ExecutionData>
@@ -498,9 +498,9 @@ where
 
         let block_height = *block.header.height();
 
-        // All transactions should be in the `TxSource`.
+        // ALl transactions should be in the `TxSource`.
         // We use `block.transactions` to store executed transactions.
-        assert!(block.transactions.is_empty());
+        debug_assert!(block.transactions.is_empty());
         let mut iter = source.next(remaining_gas_limit).into_iter().peekable();
 
         let mut execute_transaction = |execution_data: &mut ExecutionData,
@@ -508,19 +508,18 @@ where
          -> ExecutorResult<()> {
             let tx_count = execution_data.tx_count;
             let tx = {
-                let mut tx_db_transaction = block_db_transaction.transaction();
+                let mut tx_st_transaction = block_st_transaction.transaction();
                 let tx_id = tx.id(&self.config.consensus_parameters.chain_id);
-                
                 let result = self.execute_transaction(
                     tx,
                     &tx_id,
                     &block.header,
                     execution_data,
                     execution_kind,
-                    &mut tx_db_transaction,
+                    &mut tx_st_transaction,
                     options,
                 );
-                
+
                 let tx = match result {
                     Err(err) => {
                         return match execution_kind {
@@ -541,7 +540,7 @@ where
                     Ok(tx) => tx,
                 };
 
-                if let Err(err) = tx_db_transaction.commit() {
+                if let Err(err) = tx_st_transaction.commit() {
                     return Err(err.into())
                 }
                 tx
@@ -555,7 +554,6 @@ where
             Ok(())
         };
 
-
         while iter.peek().is_some() {
             for transaction in iter {
                 execute_transaction(&mut *execution_data, transaction)?;
@@ -567,46 +565,44 @@ where
             iter = source.next(remaining_gas_limit).into_iter().peekable();
         }
 
-        todo!("execute_block tail");
+        // After the execution of all transactions in production mode, we can set the final fee.
+        if execution_kind == ExecutionKind::Production {
+            let amount_to_mint = if self.config.coinbase_recipient != ContractId::zeroed()
+            {
+                execution_data.coinbase
+            } else {
+                0
+            };
 
-        // // After the execution of all transactions in production mode, we can set the final fee.
-        // if execution_kind == ExecutionKind::Production {
-        //     let amount_to_mint = if self.config.coinbase_recipient != ContractId::zeroed()
-        //     {
-        //         execution_data.coinbase
-        //     } else {
-        //         0
-        //     };
+            let coinbase_tx = Transaction::mint(
+                TxPointer::new(block_height, execution_data.tx_count),
+                input::contract::Contract {
+                    utxo_id: UtxoId::new(Bytes32::zeroed(), 0),
+                    balance_root: Bytes32::zeroed(),
+                    state_root: Bytes32::zeroed(),
+                    tx_pointer: TxPointer::new(BlockHeight::new(0), 0),
+                    contract_id: self.config.coinbase_recipient,
+                },
+                output::contract::Contract {
+                    input_index: 0,
+                    balance_root: Bytes32::zeroed(),
+                    state_root: Bytes32::zeroed(),
+                },
+                amount_to_mint,
+                self.config.consensus_parameters.base_asset_id,
+            );
 
-        //     let coinbase_tx = Transaction::mint(
-        //         TxPointer::new(block_height, execution_data.tx_count),
-        //         input::contract::Contract {
-        //             utxo_id: UtxoId::new(Bytes32::zeroed(), 0),
-        //             balance_root: Bytes32::zeroed(),
-        //             state_root: Bytes32::zeroed(),
-        //             tx_pointer: TxPointer::new(BlockHeight::new(0), 0),
-        //             contract_id: self.config.coinbase_recipient,
-        //         },
-        //         output::contract::Contract {
-        //             input_index: 0,
-        //             balance_root: Bytes32::zeroed(),
-        //             state_root: Bytes32::zeroed(),
-        //         },
-        //         amount_to_mint,
-        //         self.config.consensus_parameters.base_asset_id,
-        //     );
+            execute_transaction(
+                execution_data,
+                MaybeCheckedTransaction::Transaction(coinbase_tx.into()),
+            )?;
+        }
 
-        //     execute_transaction(
-        //         execution_data,
-        //         MaybeCheckedTransaction::Transaction(coinbase_tx.into()),
-        //     )?;
-        // }
+        if execution_kind != ExecutionKind::DryRun && !data.found_mint {
+            return Err(ExecutorError::MintMissing)
+        }
 
-        // if execution_kind != ExecutionKind::DryRun && !data.found_mint {
-        //     return Err(ExecutorError::MintMissing)
-        // }
-
-        // Ok(data)
+        Ok(data)
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -617,7 +613,7 @@ where
         header: &PartialBlockHeader,
         execution_data: &mut ExecutionData,
         execution_kind: ExecutionKind,
-        tx_db_transaction: &mut DatabaseTransaction,
+        tx_st_transaction: &mut StorageTransaction<D>,
         options: ExecutionOptions,
     ) -> ExecutorResult<Transaction> {
         if execution_data.found_mint {
@@ -625,15 +621,13 @@ where
         }
 
         // Throw a clear error if the transaction id is a duplicate
-        if tx_db_transaction
-            .deref_mut()
+        if tx_st_transaction
+            .as_ref()
             .storage::<Transactions>()
             .contains_key(tx_id)?
         {
             return Err(ExecutorError::TransactionIdCollision(*tx_id))
         }
-
-        
 
         let block_height = *header.height();
         let checked_tx = match tx {
@@ -642,33 +636,32 @@ where
                 .into(),
             MaybeCheckedTransaction::CheckedTransaction(checked_tx) => checked_tx,
         };
-        
+
         match checked_tx {
             CheckedTransaction::Script(script) => self.execute_create_or_script(
                 script,
                 header,
                 execution_data,
-                tx_db_transaction,
+                tx_st_transaction,
                 execution_kind,
                 options,
             ),
-            _ => todo!("Only Script transactions yet")
-            // CheckedTransaction::Create(create) => self.execute_create_or_script(
-            //     create,
-            //     header,
-            //     execution_data,
-            //     tx_db_transaction,
-            //     execution_kind,
-            //     options,
-            // ),
-            // CheckedTransaction::Mint(mint) => self.execute_mint(
-            //     mint,
-            //     header,
-            //     execution_data,
-            //     tx_db_transaction,
-            //     execution_kind,
-            //     options,
-            // ),
+            CheckedTransaction::Create(create) => self.execute_create_or_script(
+                create,
+                header,
+                execution_data,
+                tx_st_transaction,
+                execution_kind,
+                options,
+            ),
+            CheckedTransaction::Mint(mint) => self.execute_mint(
+                mint,
+                header,
+                execution_data,
+                tx_st_transaction,
+                execution_kind,
+                options,
+            ),
         }
     }
 
@@ -677,7 +670,7 @@ where
         checked_mint: Checked<Mint>,
         header: &PartialBlockHeader,
         execution_data: &mut ExecutionData,
-        block_db_transaction: &mut DatabaseTransaction,
+        block_st_transaction: &mut StorageTransaction<D>,
         execution_kind: ExecutionKind,
         options: ExecutionOptions,
     ) -> ExecutorResult<Transaction> {
@@ -730,7 +723,7 @@ where
             if options.utxo_validation {
                 // validate utxos exist
                 self.verify_input_state(
-                    block_db_transaction.deref(),
+                    block_st_transaction.as_ref(),
                     inputs.as_mut_slice(),
                     block_height,
                     header.da_height,
@@ -750,24 +743,25 @@ where
                     }
                 },
                 coinbase_id,
-                block_db_transaction.deref_mut(),
+                block_st_transaction.as_mut(),
                 options,
             )?;
 
-            let mut sub_block_db_commit = block_db_transaction.transaction();
-            let sub_db_view = sub_block_db_commit.as_mut();
-            let mut vm_db = VmDatabase::new(
-                sub_db_view.clone(),
+            let mut sub_block_db_commit = block_st_transaction.transaction();
+
+            let mut vm_db = VmStorage::new(
+                sub_block_db_commit.as_mut(),
                 &header.consensus,
                 self.config.coinbase_recipient,
             );
+
             fuel_vm::interpreter::contract::balance_increase(
                 &mut vm_db,
                 &mint.input_contract().contract_id,
                 mint.mint_asset_id(),
                 *mint.mint_amount(),
             )
-            .map_err(|e| anyhow::anyhow!(e))
+            .map_err(|e| anyhow::anyhow!(format!("{e}")))
             .map_err(ExecutorError::CoinbaseCannotIncreaseBalance)?;
             sub_block_db_commit.commit()?;
 
@@ -775,7 +769,7 @@ where
                 block_height,
                 execution_data.tx_count,
                 &coinbase_id,
-                block_db_transaction,
+                block_st_transaction.as_mut(),
                 inputs.as_slice(),
                 outputs.as_slice(),
             )?;
@@ -795,7 +789,7 @@ where
                     )),
                 },
                 coinbase_id,
-                block_db_transaction.deref_mut(),
+                block_st_transaction.as_mut(),
             )?;
             let Input::Contract(input) = core::mem::take(&mut inputs[0]) else {
                 unreachable!()
@@ -821,8 +815,8 @@ where
             result: TransactionExecutionResult::Success { result: None },
         });
 
-        if block_db_transaction
-            .deref_mut()
+        if block_st_transaction
+            .as_mut()
             .storage::<Transactions>()
             .insert(&coinbase_id, &tx)?
             .is_some()
@@ -838,7 +832,7 @@ where
         mut checked_tx: Checked<Tx>,
         header: &PartialBlockHeader,
         execution_data: &mut ExecutionData,
-        tx_db_transaction: &mut DatabaseTransaction,
+        tx_st_transaction: &mut StorageTransaction<D>,
         execution_kind: ExecutionKind,
         options: ExecutionOptions,
     ) -> ExecutorResult<Transaction>
@@ -863,7 +857,7 @@ where
 
             // validate utxos exist and maturity is properly set
             self.verify_input_state(
-                tx_db_transaction.deref(),
+                tx_st_transaction.as_ref(),
                 checked_tx.transaction().inputs(),
                 *header.height(),
                 header.da_height,
@@ -875,39 +869,32 @@ where
             debug_assert!(checked_tx.checks().contains(Checks::Signatures));
         }
 
-        
         // execute transaction
         // setup database view that only lives for the duration of vm execution
-        let mut sub_block_db_commit = tx_db_transaction.transaction();
-        let sub_db_view = sub_block_db_commit.as_mut();
+        let mut sub_block_db_commit = tx_st_transaction.transaction();
+        let sub_db_view: &mut D = sub_block_db_commit.as_mut();
+
         // execution vm
-        let vm_db = VmDatabase::new(
-            sub_db_view.clone(),
+        let vm_db: VmStorage<&mut D> = VmStorage::new(
+            &mut sub_db_view.clone(),
             &header.consensus,
             self.config.coinbase_recipient,
         );
-        let mut vm = Interpreter::with_storage(
+
+        let mut vm: Interpreter<VmStorage<&mut D>, _, _> = Interpreter::with_storage(
             vm_db,
             InterpreterParams::from(&self.config.consensus_parameters),
         );
-
-
-
         let vm_result: StateTransition<_> = vm
             .transact(checked_tx.clone())
             .map_err(|error| ExecutorError::VmExecution {
-                error: InterpreterError::Storage(anyhow::anyhow!(error)),
+                error: InterpreterError::Storage(anyhow::anyhow!(format!("{error:?}"))),
                 transaction_id: tx_id,
             })?
             .into();
-
-        // todo!("execute_create_or_script tail");
-            
-
         let reverted = vm_result.should_revert();
 
         let (state, mut tx, receipts) = vm_result.into_inner();
-        
 
         // Wrap inputs in the execution kind.
         self.compute_inputs(
@@ -917,10 +904,9 @@ where
                 ExecutionKind::Validation => ExecutionTypes::Validation(tx.inputs()),
             },
             tx_id,
-            tx_db_transaction.deref_mut(),
+            tx_st_transaction.as_mut(),
             options,
         )?;
-
 
         // only commit state changes if execution was a success
         if !reverted {
@@ -945,17 +931,15 @@ where
             }
         }
 
-        
-
         // change the spent status of the tx inputs
-        self.spend_input_utxos(tx.inputs(), tx_db_transaction.deref_mut(), reverted)?;
+        self.spend_input_utxos(tx.inputs(), tx_st_transaction.as_mut(), reverted)?;
 
         // Persist utxos first and after calculate the not utxo outputs
         self.persist_output_utxos(
             *header.height(),
             execution_data.tx_count,
             &tx_id,
-            tx_db_transaction.deref_mut(),
+            tx_st_transaction.as_mut(),
             tx.inputs(),
             tx.outputs(),
         )?;
@@ -975,20 +959,20 @@ where
                 }
             },
             tx_id,
-            tx_db_transaction.deref_mut(),
+            tx_st_transaction.as_mut(),
         )?;
         *tx.outputs_mut() = outputs;
 
         let final_tx = tx.into();
 
         // Store tx into the block db transaction
-        tx_db_transaction
-            .deref_mut()
+        tx_st_transaction
+            .as_mut()
             .storage::<Transactions>()
             .insert(&tx_id, &final_tx)?;
 
         // persist receipts
-        self.persist_receipts(&tx_id, &receipts, tx_db_transaction.deref_mut())?;
+        self.persist_receipts(&tx_id, &receipts, tx_st_transaction.as_mut())?;
 
         let status = if reverted {
             self.log_backtrace(&vm, &receipts);
@@ -1035,7 +1019,7 @@ where
 
     fn verify_input_state(
         &self,
-        db: &Database,
+        db: &D,
         inputs: &[Input],
         block_height: BlockHeight,
         block_da_height: DaBlockHeight,
@@ -1128,7 +1112,7 @@ where
     fn spend_input_utxos(
         &self,
         inputs: &[Input],
-        db: &mut Database,
+        db: &mut D,
         reverted: bool,
     ) -> ExecutorResult<()> {
         for input in inputs {
@@ -1140,7 +1124,7 @@ where
                 }
                 Input::MessageDataSigned(_)
                 | Input::MessageDataPredicate(_)
-                    if reverted => {
+                if reverted => {
                     // Don't spend the retryable messages if transaction is reverted
                     continue
                 }
@@ -1148,7 +1132,7 @@ where
                 | Input::MessageCoinPredicate(MessageCoinPredicate { nonce, .. })
                 | Input::MessageDataSigned(MessageDataSigned { nonce, .. }) // Spend only if tx is not reverted
                 | Input::MessageDataPredicate(MessageDataPredicate { nonce, .. }) // Spend only if tx is not reverted
-                 => {
+                => {
                     // mark message id as spent
                     let was_already_spent =
                         db.storage::<SpentMessages>().insert(nonce, &())?;
@@ -1175,7 +1159,7 @@ where
         for r in receipts {
             if let Receipt::ScriptResult { gas_used, .. } = r {
                 used_gas = *gas_used;
-                break;
+                break
             }
         }
 
@@ -1202,7 +1186,7 @@ where
         &self,
         inputs: ExecutionTypes<&mut [Input], &[Input]>,
         tx_id: TxId,
-        db: &mut Database,
+        db: &mut D,
         options: ExecutionOptions,
     ) -> ExecutorResult<()> {
         match inputs {
@@ -1333,7 +1317,7 @@ where
         &self,
         tx: ExecutionTypes<(&mut [Output], &[Input]), (&[Output], &[Input])>,
         tx_id: TxId,
-        db: &mut Database,
+        db: &mut D,
     ) -> ExecutorResult<()> {
         match tx {
             ExecutionTypes::DryRun(tx) | ExecutionTypes::Production(tx) => {
@@ -1393,7 +1377,7 @@ where
     #[allow(clippy::too_many_arguments)]
     pub fn get_coin_or_default(
         &self,
-        db: &mut Database,
+        db: &mut D,
         utxo_id: UtxoId,
         owner: Address,
         amount: u64,
@@ -1421,7 +1405,11 @@ where
     }
 
     /// Log a VM backtrace if configured to do so
-    fn log_backtrace<Tx>(&self, vm: &Interpreter<VmDatabase, Tx>, receipts: &[Receipt]) {
+    fn log_backtrace<Tx>(
+        &self,
+        vm: &Interpreter<VmStorage<D>, Tx>,
+        receipts: &[Receipt],
+    ) {
         if self.config.backtrace {
             if let Some(backtrace) = receipts
                 .iter()
@@ -1429,10 +1417,18 @@ where
                 .copied()
                 .map(|result| FuelBacktrace::from_vm_error(vm, result))
             {
-                let _sp = usize::try_from(backtrace.registers()[RegId::SP]).expect(
+                let sp = usize::try_from(backtrace.registers()[RegId::SP]).expect(
                     "The `$sp` register points to the memory of the VM. \
                     Because the VM's memory is limited by the `usize` of the system, \
                     it is impossible to lose higher bits during truncation.",
+                );
+                warn!(
+                    target = "vm",
+                    "Backtrace on contract: 0x{:x}\nregisters: {:?}\ncall_stack: {:?}\nstack\n: {}",
+                    backtrace.contract(),
+                    backtrace.registers(),
+                    backtrace.call_stack(),
+                    hex::encode(&backtrace.memory()[..sp]), // print stack
                 );
             }
         }
@@ -1443,7 +1439,7 @@ where
         block_height: BlockHeight,
         tx_idx: u16,
         tx_id: &Bytes32,
-        db: &mut Database,
+        db: &mut D,
         inputs: &[Input],
         outputs: &[Output],
     ) -> ExecutorResult<()> {
@@ -1529,7 +1525,7 @@ where
         amount: &Word,
         asset_id: &AssetId,
         to: &Address,
-        db: &mut Database,
+        db: &mut D,
     ) -> ExecutorResult<()> {
         // Only insert a coin output if it has some amount.
         // This is because variable or transfer outputs won't have any value
@@ -1555,7 +1551,7 @@ where
         &self,
         tx_id: &TxId,
         receipts: &[Receipt],
-        db: &mut Database,
+        db: &mut D,
     ) -> ExecutorResult<()> {
         if db.storage::<Receipts>().insert(tx_id, receipts)?.is_some() {
             return Err(ExecutorError::OutputAlreadyExists)
@@ -1563,122 +1559,117 @@ where
         Ok(())
     }
 
-    // /// Associate all transactions within a block to their respective UTXO owners
-    // fn index_tx_owners_for_block(
-    //     &self,
-    //     block: &Block,
-    //     block_db_transaction: &mut DatabaseTransaction,
-    // ) -> ExecutorResult<()> {
-    //     for (tx_idx, tx) in block.transactions().iter().enumerate() {
-    //         let block_height = *block.header().height();
-    //         let inputs;
-    //         let outputs;
-    //         let tx_idx =
-    //             u16::try_from(tx_idx).map_err(|_| ExecutorError::TooManyTransactions)?;
-    //         let tx_id = tx.id(&self.config.consensus_parameters.chain_id);
-    //         match tx {
-    //             Transaction::Script(tx) => {
-    //                 inputs = tx.inputs().as_slice();
-    //                 outputs = tx.outputs().as_slice();
-    //             }
-    //             Transaction::Create(tx) => {
-    //                 inputs = tx.inputs().as_slice();
-    //                 outputs = tx.outputs().as_slice();
-    //             }
-    //             Transaction::Mint(_) => continue,
-    //         }
-    //         self.persist_owners_index(
-    //             block_height,
-    //             inputs,
-    //             outputs,
-    //             &tx_id,
-    //             tx_idx,
-    //             block_db_transaction.deref_mut(),
-    //         )?;
-    //     }
-    //     Ok(())
-    // }
+    /// Associate all transactions within a block to their respective UTXO owners
+    fn index_tx_owners_for_block(
+        &self,
+        block: &Block,
+        block_st_transaction: &mut D,
+    ) -> ExecutorResult<()> {
+        for (tx_idx, tx) in block.transactions().iter().enumerate() {
+            let block_height = *block.header().height();
+            let inputs;
+            let outputs;
+            let tx_idx =
+                u16::try_from(tx_idx).map_err(|_| ExecutorError::TooManyTransactions)?;
+            let tx_id = tx.id(&self.config.consensus_parameters.chain_id);
+            match tx {
+                Transaction::Script(tx) => {
+                    inputs = tx.inputs().as_slice();
+                    outputs = tx.outputs().as_slice();
+                }
+                Transaction::Create(tx) => {
+                    inputs = tx.inputs().as_slice();
+                    outputs = tx.outputs().as_slice();
+                }
+                Transaction::Mint(_) => continue,
+            }
+            self.persist_owners_index(
+                block_height,
+                inputs,
+                outputs,
+                &tx_id,
+                tx_idx,
+                block_st_transaction,
+            )?;
+        }
+        Ok(())
+    }
 
-    // /// Index the tx id by owner for all of the inputs and outputs
-    // fn persist_owners_index(
-    //     &self,
-    //     block_height: BlockHeight,
-    //     inputs: &[Input],
-    //     outputs: &[Output],
-    //     tx_id: &Bytes32,
-    //     tx_idx: u16,
-    //     db: &mut Database,
-    // ) -> ExecutorResult<()> {
-    //     let mut owners = vec![];
-    //     for input in inputs {
-    //         if let Input::CoinSigned(CoinSigned { owner, .. })
-    //         | Input::CoinPredicate(CoinPredicate { owner, .. }) = input
-    //         {
-    //             owners.push(owner);
-    //         }
-    //     }
+    /// Index the tx id by owner for all of the inputs and outputs
+    fn persist_owners_index(
+        &self,
+        block_height: BlockHeight,
+        inputs: &[Input],
+        outputs: &[Output],
+        tx_id: &Bytes32,
+        tx_idx: u16,
+        db: &mut D,
+    ) -> ExecutorResult<()> {
+        let mut owners = vec![];
+        for input in inputs {
+            if let Input::CoinSigned(CoinSigned { owner, .. })
+            | Input::CoinPredicate(CoinPredicate { owner, .. }) = input
+            {
+                owners.push(owner);
+            }
+        }
 
-    //     for output in outputs {
-    //         match output {
-    //             Output::Coin { to, .. }
-    //             | Output::Change { to, .. }
-    //             | Output::Variable { to, .. } => {
-    //                 owners.push(to);
-    //             }
-    //             Output::Contract(_) | Output::ContractCreated { .. } => {}
-    //         }
-    //     }
+        for output in outputs {
+            match output {
+                Output::Coin { to, .. }
+                | Output::Change { to, .. }
+                | Output::Variable { to, .. } => {
+                    owners.push(to);
+                }
+                Output::Contract(_) | Output::ContractCreated { .. } => {}
+            }
+        }
 
-    //     // dedupe owners from inputs and outputs prior to indexing
-    //     owners.sort();
-    //     owners.dedup();
+        // dedupe owners from inputs and outputs prior to indexing
+        owners.sort();
+        owners.dedup();
 
-    //     for owner in owners {
-    //         db.record_tx_id_owner(
-    //             owner,
-    //             block_height,
-    //             tx_idx as TransactionIndex,
-    //             tx_id,
-    //         )?;
-    //     }
+        for owner in owners {
+            db.record_tx_id_owner(owner, block_height, tx_idx, tx_id)?;
+        }
 
-    //     Ok(())
-    // }
+        Ok(())
+    }
 
-    // fn persist_transaction_status(
-    //     &self,
-    //     result: &ExecutionResult,
-    //     db: &Database,
-    // ) -> ExecutorResult<()> {
-    //     let time = result.block.header().time();
-    //     let block_id = result.block.id();
-    //     for TransactionExecutionStatus { id, result } in result.tx_status.iter() {
-    //         match result {
-    //             TransactionExecutionResult::Success { result } => {
-    //                 db.update_tx_status(
-    //                     id,
-    //                     TransactionStatus::Success {
-    //                         block_id,
-    //                         time,
-    //                         result: *result,
-    //                     },
-    //                 )?;
-    //             }
-    //             TransactionExecutionResult::Failed { result, reason } => {
-    //                 db.update_tx_status(
-    //                     id,
-    //                     TransactionStatus::Failed {
-    //                         block_id,
-    //                         time,
-    //                         result: *result,
-    //                         reason: reason.clone(),
-    //                     },
-    //                 )?;
-    //             }
-    //         }
-    //     }
-    //     Ok(())
-    // }
+    fn persist_transaction_status(
+        &self,
+        result: &ExecutionResult,
+        db: &D,
+    ) -> ExecutorResult<()> {
+        let time = result.block.header().time();
+        let block_id = result.block.id();
+        for TransactionExecutionStatus { id, result } in result.tx_status.iter() {
+            match result {
+                TransactionExecutionResult::Success { result } => {
+                    db.update_tx_status(
+                        id,
+                        TransactionStatus::Success {
+                            block_id,
+                            time,
+                            result: *result,
+                        },
+                    )?;
+                }
+                TransactionExecutionResult::Failed { result, reason } => {
+                    db.update_tx_status(
+                        id,
+                        TransactionStatus::Failed {
+                            block_id,
+                            time,
+                            result: *result,
+                            reason: reason.clone(),
+                        },
+                    )?;
+                }
+            }
+        }
+        Ok(())
+    }
 }
 
 trait Fee {
@@ -1704,5 +1695,16 @@ impl Fee for CreateCheckedMetadata {
 
     fn min_fee(&self) -> Word {
         self.fee.min_fee()
+    }
+}
+
+#[cfg(feature = "test-helpers")]
+impl<D: Clone> Executor<D, D> {
+    pub fn test(database: D, config: Config) -> Self {
+        Self {
+            relayer: database.clone(),
+            database,
+            config: Arc::new(config),
+        }
     }
 }

@@ -12,6 +12,8 @@ use fuel_core_chain_config::{
     ContractConfig,
     MessageConfig,
 };
+
+use fuel_core_executor::ports::ExecutorDatabaseTrait;
 use fuel_core_storage::{
     iter::IterDirection,
     transactional::{
@@ -28,7 +30,6 @@ use serde::{
     Serialize,
 };
 use std::{
-    marker::Send,
     ops::Deref,
     sync::Arc,
 };
@@ -51,6 +52,7 @@ pub mod message;
 pub mod receipts;
 pub mod sealed_block;
 pub mod state;
+pub mod execution;
 
 pub(crate) mod coin;
 
@@ -135,50 +137,18 @@ impl Column {
 #[derive(Clone)]
 pub struct Database {
     data: DataSource,
-    // used for RAII
-    _drop: Arc<DropResources>,
-}
-
-type DropFn = Box<dyn FnOnce() + Send + Sync>;
-#[derive(Default)]
-struct DropResources {
-    // move resources into this closure to have them dropped when db drops
-    drop: Option<DropFn>,
-}
-
-impl<F: 'static + FnOnce() + Send + Sync> From<F> for DropResources {
-    fn from(closure: F) -> Self {
-        Self {
-            drop: Option::Some(Box::new(closure)),
-        }
-    }
-}
-
-impl Drop for DropResources {
-    fn drop(&mut self) {
-        if let Some(drop) = self.drop.take() {
-            (drop)()
-        }
-    }
 }
 
 impl Database {
     pub fn new(data_source: DataSource) -> Self {
         Self {
             data: data_source,
-            _drop: Default::default(),
         }
-    }
-
-    pub fn with_drop(mut self, drop: DropFn) -> Self {
-        self._drop = Arc::new(drop.into());
-        self
     }
 
     pub fn in_memory() -> Self {
         Self {
             data: Arc::new(MemoryStore::default()),
-            _drop: Default::default(),
         }
     }
 
@@ -425,3 +395,5 @@ impl ChainConfigDb for Database {
         Self::latest_height(self)
     }
 }
+
+impl ExecutorDatabaseTrait<Database> for Database {}

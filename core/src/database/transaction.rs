@@ -68,7 +68,6 @@ impl From<&Database> for DatabaseTransaction {
             changes: data.clone(),
             database: Database {
                 data,
-                _drop: Default::default(),
             },
         }
     }
