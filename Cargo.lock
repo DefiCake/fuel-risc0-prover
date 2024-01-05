@@ -3686,7 +3686,6 @@ dependencies = [
  "ethabi",
  "hex",
  "json",
- "prover-core",
  "risc0-zkvm 0.18.0",
  "sha2 0.10.6",
 ]

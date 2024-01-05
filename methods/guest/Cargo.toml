@@ -10,4 +10,4 @@ json = "0.12"
 risc0-zkvm = { git = "https://github.com/risc0/risc0", branch = "release-0.18", default-features = false, features = ["std"] }
 sha2 = { workspace = true }
 hex = { workspace = true }
-prover-core = { workspace = true }
+# prover-core = { workspace = true }
