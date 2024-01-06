@@ -4,9 +4,9 @@
 # ETA for this fix: v0.20.0-rc2
 # Meanwhile, build times will skyrocket
 start:
-	RUST_LOG=debug cargo run --bin host
+	RISC0_DEV_MODE=1 RUST_LOG="executor=info" cargo run --release
 start-relay:
-	RUST_LOG=debug cargo run --bin relay
+	RISC0_DEV_MODE=1 RUST_LOG="executor=info" cargo run --bin relay
 node-hardhat:
 	docker-compose up hardhat
 node:
