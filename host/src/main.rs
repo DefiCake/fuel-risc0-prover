@@ -1,9 +1,9 @@
-use anyhow::{Context, Result};
+use anyhow::Result;
 use clap::Parser;
 use ethabi::ParamType;
 use methods::{PROVER_ELF, PROVER_ID};
 use prover_core::Inputs;
-use risc0_zkvm::{ExecutorImpl, ExecutorEnv};
+use risc0_zkvm::{default_prover, ExecutorEnv};
 use std::{
     io::{BufReader, Read},
     path::PathBuf,
@@ -19,6 +19,9 @@ struct Args {
 }
 
 fn main() -> Result<()> {
+    // Initialize tracing. In order to view logs, run `RUST_LOG=info cargo run`
+    env_logger::init();
+    
     let args: Args = Args::parse();
 
     let path = &args
@@ -45,15 +48,11 @@ fn main() -> Result<()> {
             .build()
             .unwrap();
 
-    // Next, we make an executor, loading the (renamed) ELF binary.
-    let mut exec = ExecutorImpl::from_elf(env, PROVER_ELF).context("Failed to instantiate executor")?;
-    // let mut exec = default_executor_from_elf(env, PROVER_ELF).unwrap();
+    // Obtain the default prover.
+    let prover = default_prover();
 
-    // Run the executor to produce a session.
-    let session = exec.run().unwrap();
-
-    // Prove the session to produce a receipt.
-    let receipt = session.prove().unwrap();
+    // Produce a receipt by proving the specified ELF binary.
+    let receipt = prover.prove_elf(env, PROVER_ELF).unwrap();
 
     // Optional: Verify receipt to confirm that recipients will also be able to
     // verify your receipt

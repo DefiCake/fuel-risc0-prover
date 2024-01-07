@@ -1,10 +1,10 @@
 .PHONY: start start-relay
 
-# is a temporary workaround until https://github.com/risc0/risc0/pull/1257
+# RISC0_BUILD_DEBUG=1 is a temporary workaround until https://github.com/risc0/risc0/pull/1257
 # ETA for this fix: v0.20.0-rc2
 # Meanwhile, build times will skyrocket
 start:
-	RISC0_DEV_MODE=1 RUST_LOG="executor=info" cargo run --release
+	RISC0_BUILD_DEBUG=1 RISC0_DEV_MODE=1 RUST_LOG="executor=info" cargo run --release
 start-relay:
 	RISC0_DEV_MODE=1 RUST_LOG="executor=info" cargo run --bin relay
 node-hardhat:
