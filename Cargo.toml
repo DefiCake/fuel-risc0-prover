@@ -18,19 +18,19 @@ derive_more = { version = "0.99" }
 enum-iterator = "1.2"
 ethers = {version = "=2.0.8"}
 ethabi = "18.0.0"
-fuel-core = { git = "https://github.com/DefiCake/fuel-core", rev="e068728ae44e0ebd4fcbe13583bd37a31786a0db", default-features = false }
-fuel-core-chain-config = { git = "https://github.com/DefiCake/fuel-core", rev="e068728ae44e0ebd4fcbe13583bd37a31786a0db", default-features = false }
-fuel-core-database = { git = "https://github.com/DefiCake/fuel-core", rev="e068728ae44e0ebd4fcbe13583bd37a31786a0db", default-features = false }
-fuel-core-executor = { git = "https://github.com/DefiCake/fuel-core", rev="e068728ae44e0ebd4fcbe13583bd37a31786a0db", default-features = false }
-fuel-core-services = { git = "https://github.com/DefiCake/fuel-core", rev="e068728ae44e0ebd4fcbe13583bd37a31786a0db", default-features = false }
-fuel-core-storage = { git = "https://github.com/DefiCake/fuel-core", rev="e068728ae44e0ebd4fcbe13583bd37a31786a0db", default-features = false }
-fuel-core-types = { git = "https://github.com/DefiCake/fuel-core", rev="e068728ae44e0ebd4fcbe13583bd37a31786a0db", default-features = false }
-fuel-core-txpool = { git = "https://github.com/DefiCake/fuel-core", rev="e068728ae44e0ebd4fcbe13583bd37a31786a0db", default-features = false }
-fuel-crypto = { git = "https://github.com/DefiCake/fuel-vm", rev="bf8196df278cf03cd15b453e5837f88914c10ec4",  default-features = false}
-fuel-storage = { git = "https://github.com/DefiCake/fuel-vm", rev="bf8196df278cf03cd15b453e5837f88914c10ec4",  default-features = false}
-fuel-tx = { git = "https://github.com/DefiCake/fuel-vm", rev="bf8196df278cf03cd15b453e5837f88914c10ec4", default-features = false, features = ["builder"]}
-fuel-types = { git = "https://github.com/DefiCake/fuel-vm", rev="bf8196df278cf03cd15b453e5837f88914c10ec4",  default-features = false}
-fuel-vm = { git = "https://github.com/DefiCake/fuel-vm", rev="bf8196df278cf03cd15b453e5837f88914c10ec4",  default-features = false, features = ["serde", "alloc"]}
+fuel-core = { git = "https://github.com/DefiCake/fuel-core", rev="7e4b21abbbd1c5a38a531bf5051dbc868af86b32", default-features = false }
+fuel-core-chain-config = { git = "https://github.com/DefiCake/fuel-core", rev="7e4b21abbbd1c5a38a531bf5051dbc868af86b32", default-features = false }
+fuel-core-database = { git = "https://github.com/DefiCake/fuel-core", rev="7e4b21abbbd1c5a38a531bf5051dbc868af86b32", default-features = false }
+fuel-core-executor = { git = "https://github.com/DefiCake/fuel-core", rev="7e4b21abbbd1c5a38a531bf5051dbc868af86b32", default-features = false }
+fuel-core-services = { git = "https://github.com/DefiCake/fuel-core", rev="7e4b21abbbd1c5a38a531bf5051dbc868af86b32", default-features = false }
+fuel-core-storage = { git = "https://github.com/DefiCake/fuel-core", rev="7e4b21abbbd1c5a38a531bf5051dbc868af86b32", default-features = false }
+fuel-core-types = { git = "https://github.com/DefiCake/fuel-core", rev="7e4b21abbbd1c5a38a531bf5051dbc868af86b32", default-features = false }
+fuel-core-txpool = { git = "https://github.com/DefiCake/fuel-core", rev="7e4b21abbbd1c5a38a531bf5051dbc868af86b32", default-features = false }
+fuel-crypto = { git = "https://github.com/DefiCake/fuel-vm", rev="5550d765cf8a91a40702bb19561f81d00576c536",  default-features = false}
+fuel-storage = { git = "https://github.com/DefiCake/fuel-vm", rev="5550d765cf8a91a40702bb19561f81d00576c536",  default-features = false}
+fuel-tx = { git = "https://github.com/DefiCake/fuel-vm", rev="5550d765cf8a91a40702bb19561f81d00576c536", default-features = false, features = ["builder"]}
+fuel-types = { git = "https://github.com/DefiCake/fuel-vm", rev="5550d765cf8a91a40702bb19561f81d00576c536",  default-features = false}
+fuel-vm = { git = "https://github.com/DefiCake/fuel-vm", rev="5550d765cf8a91a40702bb19561f81d00576c536",  default-features = false, features = ["serde", "alloc"]}
 hex = "0.4.3"
 itertools = "0.10"
 primitive-types = "0.12"

@@ -1326,6 +1326,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "env_logger"
+version = "0.10.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "95b3f3e67048839cb0d0781f445682a35113da7121f7c949db0e2be96a4fbece"
+dependencies = [
+ "humantime",
+ "is-terminal",
+ "log",
+ "regex",
+ "termcolor",
+]
+
+[[package]]
 name = "equivalent"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1847,7 +1860,7 @@ dependencies = [
 [[package]]
 name = "fuel-asm"
 version = "0.43.1"
-source = "git+https://github.com/DefiCake/fuel-vm?rev=bf8196df278cf03cd15b453e5837f88914c10ec4#bf8196df278cf03cd15b453e5837f88914c10ec4"
+source = "git+https://github.com/DefiCake/fuel-vm?rev=5550d765cf8a91a40702bb19561f81d00576c536#5550d765cf8a91a40702bb19561f81d00576c536"
 dependencies = [
  "bitflags 2.4.1",
  "fuel-types",
@@ -1858,7 +1871,7 @@ dependencies = [
 [[package]]
 name = "fuel-core-chain-config"
 version = "0.22.0"
-source = "git+https://github.com/DefiCake/fuel-core?rev=e068728ae44e0ebd4fcbe13583bd37a31786a0db#e068728ae44e0ebd4fcbe13583bd37a31786a0db"
+source = "git+https://github.com/DefiCake/fuel-core?rev=7e4b21abbbd1c5a38a531bf5051dbc868af86b32#7e4b21abbbd1c5a38a531bf5051dbc868af86b32"
 dependencies = [
  "anyhow",
  "bech32",
@@ -1875,7 +1888,7 @@ dependencies = [
 [[package]]
 name = "fuel-core-database"
 version = "0.22.0"
-source = "git+https://github.com/DefiCake/fuel-core?rev=e068728ae44e0ebd4fcbe13583bd37a31786a0db#e068728ae44e0ebd4fcbe13583bd37a31786a0db"
+source = "git+https://github.com/DefiCake/fuel-core?rev=7e4b21abbbd1c5a38a531bf5051dbc868af86b32#7e4b21abbbd1c5a38a531bf5051dbc868af86b32"
 dependencies = [
  "anyhow",
  "derive_more",
@@ -1886,7 +1899,7 @@ dependencies = [
 [[package]]
 name = "fuel-core-executor"
 version = "0.22.0"
-source = "git+https://github.com/DefiCake/fuel-core?rev=e068728ae44e0ebd4fcbe13583bd37a31786a0db#e068728ae44e0ebd4fcbe13583bd37a31786a0db"
+source = "git+https://github.com/DefiCake/fuel-core?rev=7e4b21abbbd1c5a38a531bf5051dbc868af86b32#7e4b21abbbd1c5a38a531bf5051dbc868af86b32"
 dependencies = [
  "anyhow",
  "fuel-core-chain-config",
@@ -1900,7 +1913,7 @@ dependencies = [
 [[package]]
 name = "fuel-core-storage"
 version = "0.22.0"
-source = "git+https://github.com/DefiCake/fuel-core?rev=e068728ae44e0ebd4fcbe13583bd37a31786a0db#e068728ae44e0ebd4fcbe13583bd37a31786a0db"
+source = "git+https://github.com/DefiCake/fuel-core?rev=7e4b21abbbd1c5a38a531bf5051dbc868af86b32#7e4b21abbbd1c5a38a531bf5051dbc868af86b32"
 dependencies = [
  "anyhow",
  "derive_more",
@@ -1913,7 +1926,7 @@ dependencies = [
 [[package]]
 name = "fuel-core-types"
 version = "0.22.0"
-source = "git+https://github.com/DefiCake/fuel-core?rev=e068728ae44e0ebd4fcbe13583bd37a31786a0db#e068728ae44e0ebd4fcbe13583bd37a31786a0db"
+source = "git+https://github.com/DefiCake/fuel-core?rev=7e4b21abbbd1c5a38a531bf5051dbc868af86b32#7e4b21abbbd1c5a38a531bf5051dbc868af86b32"
 dependencies = [
  "anyhow",
  "bs58",
@@ -1929,7 +1942,7 @@ dependencies = [
 [[package]]
 name = "fuel-crypto"
 version = "0.43.1"
-source = "git+https://github.com/DefiCake/fuel-vm?rev=bf8196df278cf03cd15b453e5837f88914c10ec4#bf8196df278cf03cd15b453e5837f88914c10ec4"
+source = "git+https://github.com/DefiCake/fuel-vm?rev=5550d765cf8a91a40702bb19561f81d00576c536#5550d765cf8a91a40702bb19561f81d00576c536"
 dependencies = [
  "ecdsa",
  "ed25519-dalek",
@@ -1945,7 +1958,7 @@ dependencies = [
 [[package]]
 name = "fuel-derive"
 version = "0.43.1"
-source = "git+https://github.com/DefiCake/fuel-vm?rev=bf8196df278cf03cd15b453e5837f88914c10ec4#bf8196df278cf03cd15b453e5837f88914c10ec4"
+source = "git+https://github.com/DefiCake/fuel-vm?rev=5550d765cf8a91a40702bb19561f81d00576c536#5550d765cf8a91a40702bb19561f81d00576c536"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1956,7 +1969,7 @@ dependencies = [
 [[package]]
 name = "fuel-merkle"
 version = "0.43.1"
-source = "git+https://github.com/DefiCake/fuel-vm?rev=bf8196df278cf03cd15b453e5837f88914c10ec4#bf8196df278cf03cd15b453e5837f88914c10ec4"
+source = "git+https://github.com/DefiCake/fuel-vm?rev=5550d765cf8a91a40702bb19561f81d00576c536#5550d765cf8a91a40702bb19561f81d00576c536"
 dependencies = [
  "derive_more",
  "digest 0.10.7",
@@ -1970,12 +1983,12 @@ dependencies = [
 [[package]]
 name = "fuel-storage"
 version = "0.43.1"
-source = "git+https://github.com/DefiCake/fuel-vm?rev=bf8196df278cf03cd15b453e5837f88914c10ec4#bf8196df278cf03cd15b453e5837f88914c10ec4"
+source = "git+https://github.com/DefiCake/fuel-vm?rev=5550d765cf8a91a40702bb19561f81d00576c536#5550d765cf8a91a40702bb19561f81d00576c536"
 
 [[package]]
 name = "fuel-tx"
 version = "0.43.1"
-source = "git+https://github.com/DefiCake/fuel-vm?rev=bf8196df278cf03cd15b453e5837f88914c10ec4#bf8196df278cf03cd15b453e5837f88914c10ec4"
+source = "git+https://github.com/DefiCake/fuel-vm?rev=5550d765cf8a91a40702bb19561f81d00576c536#5550d765cf8a91a40702bb19561f81d00576c536"
 dependencies = [
  "bitflags 2.4.1",
  "derivative",
@@ -1996,7 +2009,7 @@ dependencies = [
 [[package]]
 name = "fuel-types"
 version = "0.43.1"
-source = "git+https://github.com/DefiCake/fuel-vm?rev=bf8196df278cf03cd15b453e5837f88914c10ec4#bf8196df278cf03cd15b453e5837f88914c10ec4"
+source = "git+https://github.com/DefiCake/fuel-vm?rev=5550d765cf8a91a40702bb19561f81d00576c536#5550d765cf8a91a40702bb19561f81d00576c536"
 dependencies = [
  "fuel-derive",
  "hex",
@@ -2007,7 +2020,7 @@ dependencies = [
 [[package]]
 name = "fuel-vm"
 version = "0.43.1"
-source = "git+https://github.com/DefiCake/fuel-vm?rev=bf8196df278cf03cd15b453e5837f88914c10ec4#bf8196df278cf03cd15b453e5837f88914c10ec4"
+source = "git+https://github.com/DefiCake/fuel-vm?rev=5550d765cf8a91a40702bb19561f81d00576c536#5550d765cf8a91a40702bb19561f81d00576c536"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2374,6 +2387,7 @@ dependencies = [
  "bonsai-sdk 0.5.1 (git+https://github.com/risc0/risc0?branch=release-0.19)",
  "bytemuck",
  "clap",
+ "env_logger",
  "ethabi",
  "ethers",
  "hex",
@@ -2425,6 +2439,12 @@ name = "httpdate"
 version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "df3b46402a9d5adb4c86a0cf463f42e19994e3ee891101b1841f30a545cb49a9"
+
+[[package]]
+name = "humantime"
+version = "2.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9a3a5bfb195931eeb336b2a7b4d761daec841b97f947d34394601737a7bba5e4"
 
 [[package]]
 name = "hyper"
@@ -5158,6 +5178,15 @@ dependencies = [
  "dirs-next",
  "rustversion",
  "winapi",
+]
+
+[[package]]
+name = "termcolor"
+version = "1.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ff1bc3d3f05aff0403e8ac0d92ced918ec05b666a43f83297ccef5bea8a3d449"
+dependencies = [
+ "winapi-util",
 ]
 
 [[package]]
