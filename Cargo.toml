@@ -3,7 +3,8 @@ members = [
     "host",
     # "relay", # Temporarily disabled
     "methods/guest",
-    "core"
+    "core",
+    "test"
 ]
 #default-members = ["host", "relay"]
 default-members = ["host"]

@@ -16,4 +16,4 @@ node-docker:
 build:
 	cargo build
 test:
-	cargo +stable test -p prover-core -- --nocapture
+	cargo +stable test -p test -- --nocapture

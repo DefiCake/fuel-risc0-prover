@@ -9,7 +9,7 @@ bonsai-sdk = {workspace = true}
 bytemuck = "1.13.1"
 ethabi = { workspace = true }
 methods = { workspace = true }
-anyhow = "1.0"
+anyhow = { workspace = true }
 clap = { version = "=4.3.21", default-features = false, features = ["std", "derive"] }
 env_logger = "0.10"
 ethers = {workspace=true}
