@@ -1,13 +1,14 @@
 pub mod database;
 pub mod state;
-// pub mod executor;
+pub mod genesis;
+pub mod executor;
+// pub mod config;
 
 use std::sync::Arc;
 
 use fuel_core_chain_config::ChainConfig;
 use database::Database;
 
-// use executor::{Executor, RelayerPort, OnceTransactionsSource};
 use fuel_core_types::{
     blockchain::{primitives::DaBlockHeight, header::PartialBlockHeader}, 
     entities::message::Message,
@@ -15,6 +16,7 @@ use fuel_core_types::{
 };
 use fuel_tx::{Script, Transaction};
 use fuel_types::{Nonce, Bytes32};
+use genesis::maybe_initialize_state;
 use serde::{Deserialize, Serialize};
 
 use fuel_core_executor::{executor::{Executor, OnceTransactionsSource}, ports::RelayerPort};
@@ -52,6 +54,7 @@ pub fn check_transition(
     let initial_height = initial_state.height.expect("Could not load initial height");
     let database = Database::in_memory();
     database.init(&config).expect("database.init() failed");
+    maybe_initialize_state(&config, &database).expect("Failed to initialize state");
 
     let relayer: MockRelayer = MockRelayer { database: database.clone() };
 
