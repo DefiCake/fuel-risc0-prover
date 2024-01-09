@@ -1,4 +1,4 @@
-.PHONY: start start-relay
+.PHONY: start start-relay node-hardhat node node-docker build test
 
 # RISC0_BUILD_DEBUG=1 is a temporary workaround until https://github.com/risc0/risc0/pull/1257
 # ETA for this fix: v0.20.0-rc2

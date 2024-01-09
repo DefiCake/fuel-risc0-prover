@@ -5,4 +5,8 @@ edition = "2021"
 
 [dependencies]
 anyhow = { workspace = true }
+fuels={version = "0.54.0", features=["std", "fuel-core-lib"]}
+fuel-core = { workspace = true, features = ["relayer"] }
+fuel-crypto = { workspace = true }
 prover-core = { workspace = true }
+tokio = { workspace = true }
