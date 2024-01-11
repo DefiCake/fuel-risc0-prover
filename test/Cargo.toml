@@ -9,4 +9,6 @@ fuels={version = "0.54.0", features=["std", "fuel-core-lib"]}
 fuel-core = { workspace = true, features = ["relayer"] }
 fuel-crypto = { workspace = true }
 prover-core = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
 tokio = { workspace = true }

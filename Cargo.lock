@@ -6523,6 +6523,8 @@ dependencies = [
  "fuel-crypto 0.43.1",
  "fuels",
  "prover-core",
+ "serde",
+ "serde_json",
  "tokio",
 ]
 

@@ -11,13 +11,12 @@ use fuel_crypto::fuel_types::{Address, Bytes32};
 
 use fuels::{
     prelude:: WalletUnlocked ,
-    accounts::ViewOnlyAccount,
+    accounts::{ViewOnlyAccount, provider::Provider},
 };
 
-const DEFAULT_MNEMONIC_PHRASE: &str = "test test test test test test test test test test test junk";
-const N_ACCOUNTS: u8 = 20;
+use super::constants::{N_ACCOUNTS, DEFAULT_MNEMONIC_PHRASE};
 
-pub async fn bootstrap1() -> anyhow::Result<FuelService> {
+pub async fn bootstrap1() -> anyhow::Result<(FuelService, Provider)> {
     let accounts: Vec<WalletUnlocked> = vec![0..N_ACCOUNTS]
         .iter()
         .enumerate()
@@ -72,12 +71,12 @@ pub async fn bootstrap1() -> anyhow::Result<FuelService> {
   
     let srv = FuelService::from_database(database.clone(), fuel_service_config.clone()).await.unwrap();
     srv.await_relayer_synced().await.unwrap();
+    let provider = Provider::connect(srv.bound_address.to_string()).await.unwrap();
   
     // dbg!(database.ids_of_latest_block());
   
     // snapshot(srv.shared.database.clone(), "snapshot_a.json".into()).expect("Failed to do first snapshot");
   
-    // let provider = Provider::connect(srv.bound_address.to_string()).await.unwrap();
   
     // let block_a = srv.shared.database.get_current_block().unwrap().unwrap();
   
@@ -155,6 +154,6 @@ pub async fn bootstrap1() -> anyhow::Result<FuelService> {
     // dbg!(block_b.header());
     // dbg!(block_b.header().hash());
 
-    anyhow::Ok(srv)
+    anyhow::Ok((srv, provider))
   }
   

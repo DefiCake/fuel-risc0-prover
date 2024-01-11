@@ -36,9 +36,9 @@ fn main() -> Result<()> {
         .expect("Could not read from buffer");
 
     let inputs = Inputs {
-        chain_config: String::from(include_str!("../../core/res/test_snapshot.json")),
-        target_block: String::from(include_str!("../../core/res/test_target_block.json")),
-        transaction_json: String::from(include_str!("../../core/res/test_transaction.json")),
+        chain_config: String::from(include_str!("../../test/res/test_snapshot.json")),
+        target_block: String::from(include_str!("../../test/res/test_target_block.json")),
+        transaction_json: String::from(include_str!("../../test/res/test_transaction.json")),
     };
 
     let env = 
