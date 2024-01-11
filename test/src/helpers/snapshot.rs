@@ -1,4 +1,4 @@
-use fuel_core::{service::FuelService, chain_config::{StateConfig, ChainConfig}, types::blockchain::block::Block};
+use fuel_core::{service::FuelService, chain_config::{StateConfig, ChainConfig}, types::{blockchain::block::Block, services::p2p::Transactions}};
 use fuel_crypto::fuel_types::Bytes32;
 
 pub fn snapshot(fuel_service: &FuelService) -> anyhow::Result<ChainConfig> {
@@ -33,4 +33,10 @@ pub fn block_stringify(block: &Block<Bytes32>) -> anyhow::Result<String> {
     let stringified = serde_json::to_string_pretty(block)?;
 
     Ok(stringified)    
+}
+
+pub fn txs_stringify(txs: Vec<Transactions>) -> anyhow::Result<String> {
+    let stringified = serde_json::to_string_pretty(&txs)?;
+
+    Ok(stringified)
 }
