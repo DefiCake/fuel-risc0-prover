@@ -2,13 +2,6 @@ use fuels::{accounts::{provider::Provider, wallet::WalletUnlocked, Account}, typ
 
 use super::constants::{get_wallet_by_name, AccountName};
 
-
-/**
- * On this file
- */
-
- 
-
 pub async fn send_funds(
     provider: &Provider, 
     from: Option<WalletUnlocked>, 

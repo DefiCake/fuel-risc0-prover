@@ -24,15 +24,14 @@ async fn test_one_transaction() -> anyhow::Result<()> {
     
     
     send_funds(&provider, None, None, false).await?;
-    // send_funds(
-    //     &provider, 
-    //     Some(get_wallet_by_name(AccountName::Carol)), 
-    //     Some(get_wallet_by_name(AccountName::Dave)), 
-    //     false
-    // ).await?;
+    send_funds(
+        &provider, 
+        Some(get_wallet_by_name(AccountName::Carol)), 
+        Some(get_wallet_by_name(AccountName::Dave)), 
+        false
+    ).await?;
 
     let block = srv.shared.database.get_current_block()?.unwrap();
-    dbg!(&block.header().height());
     let _stringified_block = block_stringify(&block)?; // To be used at check_transition(_, block, _)
     
     let block_height = block.header().height().deref().clone();

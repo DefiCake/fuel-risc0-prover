@@ -19,17 +19,18 @@ use fuels::{
 use super::constants::{N_ACCOUNTS, DEFAULT_MNEMONIC_PHRASE};
 
 pub async fn bootstrap1() -> anyhow::Result<(FuelService, Provider)> {
-    let accounts: Vec<WalletUnlocked> = vec![0..N_ACCOUNTS]
-        .iter()
-        .enumerate()
-        .map(|(index,_)| {
-            WalletUnlocked::new_from_mnemonic_phrase_with_path(
-                DEFAULT_MNEMONIC_PHRASE, 
-                None, 
-                format!("m/44'/60'/0'/0/{}", index).as_str()
-            ).expect("Could not instantiate account")
-        })
-        .collect();
+    let mut accounts: Vec<WalletUnlocked> = Vec::new();
+
+    for index in 0..N_ACCOUNTS {
+      let wallet = 
+        WalletUnlocked::new_from_mnemonic_phrase_with_path(
+          DEFAULT_MNEMONIC_PHRASE, 
+          None, 
+          format!("m/44'/60'/0'/0/{}", index).as_str()
+        ).expect("Could not instantiate account");
+
+      accounts.push(wallet);
+    }
 
     let coins: Vec<CoinConfig> = accounts
         .clone()
@@ -43,7 +44,7 @@ pub async fn bootstrap1() -> anyhow::Result<(FuelService, Provider)> {
             vec_tx_id[31] = index as u8;
             let tx_id_slice: &[u8; 32] = vec_tx_id.as_slice().try_into().expect("asd");            
             let tx_id = Bytes32::from_bytes_ref(tx_id_slice).clone();
-            
+
             CoinConfig {
                 tx_id: Some(tx_id),
                 output_index: Some(0),
