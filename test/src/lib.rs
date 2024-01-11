@@ -1,6 +1,7 @@
 mod helpers;
 
-use fuel_core::fuel_core_graphql_api::ports::DatabaseBlocks;
+pub use std::ops::Deref;
+
 pub use fuel_core::service::ServiceTrait;
 pub use prover_core::check_transition;
 
@@ -22,29 +23,26 @@ async fn test_one_transaction() -> anyhow::Result<()> {
     // next: import util
     
     
-    let tx_id = send_funds(&provider, None, None, false).await?;
-    // let tx_id = send_funds(
+    send_funds(&provider, None, None, false).await?;
+    // send_funds(
     //     &provider, 
     //     Some(get_wallet_by_name(AccountName::Carol)), 
     //     Some(get_wallet_by_name(AccountName::Dave)), 
     //     false
     // ).await?;
-    provider.produce_blocks(1, None).await?;
-
-    let what = provider.tx_status(&tx_id).await?;
-    dbg!(what);
-
-    dbg!(srv.shared.database.ids_of_latest_block().unwrap());
-
 
     let block = srv.shared.database.get_current_block()?.unwrap();
+    dbg!(&block.header().height());
     let _stringified_block = block_stringify(&block)?; // To be used at check_transition(_, block, _)
-
-    // Now, lets get the transactions of a block
-    // TODO: get transactions of the target block
+    
+    let block_height = block.header().height().deref().clone();
+    
+    let _transactions = 
+        srv.shared.database.get_transactions_on_blocks(block_height..block_height + 1)?
+        .unwrap(); // To be used at check_transition(_, _, transitions)
     
     // let _block_id = check_transition(TEST_SNAPSHOT, TEST_BLOCK, TEST_TRANSACTION);
-    
+
     srv.stop_and_await().await.expect("Could not shutdown node");
     Ok(())
 }
