@@ -1,9 +1,11 @@
 mod helpers;
 
+use fuel_core::fuel_core_graphql_api::ports::DatabaseBlocks;
 pub use fuel_core::service::ServiceTrait;
 pub use prover_core::check_transition;
 
-pub use crate::helpers::{bootstrap1, snapshot, SnapshotStringify, block_stringify, alice_sends_bob_100};
+
+pub use crate::helpers::{bootstrap1, snapshot, SnapshotStringify, block_stringify, send_funds, get_wallet_by_name, AccountName};
 
 pub const TEST_SNAPSHOT: &str = include_str!("../res/test_snapshot.json");
 pub const TEST_BLOCK: &str = include_str!("../res/test_target_block.json");
@@ -20,9 +22,21 @@ async fn test_one_transaction() -> anyhow::Result<()> {
     // next: import util
     
     
-    alice_sends_bob_100(&provider, None, None, true).await?;
+    let tx_id = send_funds(&provider, None, None, false).await?;
+    // let tx_id = send_funds(
+    //     &provider, 
+    //     Some(get_wallet_by_name(AccountName::Carol)), 
+    //     Some(get_wallet_by_name(AccountName::Dave)), 
+    //     false
+    // ).await?;
+    provider.produce_blocks(1, None).await?;
 
-    
+    let what = provider.tx_status(&tx_id).await?;
+    dbg!(what);
+
+    dbg!(srv.shared.database.ids_of_latest_block().unwrap());
+
+
     let block = srv.shared.database.get_current_block()?.unwrap();
     let _stringified_block = block_stringify(&block)?; // To be used at check_transition(_, block, _)
 

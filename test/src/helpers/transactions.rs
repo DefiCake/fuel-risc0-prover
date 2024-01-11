@@ -1,6 +1,6 @@
-use fuels::{accounts::{provider::Provider, wallet::{WalletUnlocked, Wallet}, Account}, types::{transaction_builders::{ScriptTransactionBuilder, BuildableTransaction}, transaction::TxPolicies}};
+use fuels::{accounts::{provider::Provider, wallet::WalletUnlocked, Account}, types::{transaction_builders::{ScriptTransactionBuilder, BuildableTransaction}, transaction::TxPolicies}, tx::Bytes32};
 
-use super::constants::{default_alice, default_bob};
+use super::constants::{get_wallet_by_name, AccountName};
 
 
 /**
@@ -9,16 +9,15 @@ use super::constants::{default_alice, default_bob};
 
  
 
-pub async fn alice_sends_bob_100(
+pub async fn send_funds(
     provider: &Provider, 
-    alice: Option<WalletUnlocked>, 
-    bob: Option<Wallet>,
+    from: Option<WalletUnlocked>, 
+    to: Option<WalletUnlocked>,
     commit: bool,
-) -> anyhow::Result<()> {
-    let mut alice = alice.unwrap_or_else(default_alice);
+) -> anyhow::Result<Bytes32> {
+    let mut alice = from.unwrap_or(get_wallet_by_name(AccountName::Alice));
     alice.set_provider(provider.clone());
-
-    let bob = bob.unwrap_or_else(|| Wallet::from_address(default_bob().address().clone(), Some(provider.clone())));
+    let bob = to.unwrap_or(get_wallet_by_name(AccountName::Bob));
 
     let amount = 100u64;
     let asset_id = Default::default();
@@ -35,11 +34,11 @@ pub async fn alice_sends_bob_100(
 
     let tx = tx_builder.build(provider).await?;
 
-    if commit {
-        provider.send_transaction_and_await_commit(tx).await?;
+    let tx_id: Bytes32 = if commit {
+        provider.send_transaction_and_await_commit(tx).await?
     } else {
-        provider.send_transaction(tx).await?;
-    }
+        provider.send_transaction(tx).await?
+    };
 
-    Ok(())
+    Ok(tx_id)
 }
