@@ -38,7 +38,7 @@ fn main() -> Result<()> {
     let inputs = Inputs {
         chain_config: String::from(include_str!("../../test/res/test_snapshot.json")),
         target_block: String::from(include_str!("../../test/res/test_target_block.json")),
-        transaction_json: String::from(include_str!("../../test/res/test_transaction.json")),
+        transactions_json: String::from(include_str!("../../test/res/test_transaction.json")),
     };
 
     let env = 

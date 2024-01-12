@@ -12,7 +12,7 @@ use database::Database;
 use fuel_core_types::{
     blockchain::{primitives::DaBlockHeight, header::PartialBlockHeader}, 
     entities::message::Message,
-    blockchain::{block::Block, primitives::BlockId}, services::{executor::ExecutionTypes, block_producer::Components}
+    blockchain::{block::Block, primitives::BlockId}, services::{executor::ExecutionTypes, block_producer::Components, p2p::Transactions}
 };
 use fuel_tx::{Script, Transaction};
 use fuel_types::{Nonce, Bytes32};
@@ -38,13 +38,13 @@ impl RelayerPort for MockRelayer {
 pub struct Inputs {
     pub chain_config: String,
     pub target_block: String,
-    pub transaction_json: String,
+    pub transactions_json: String,
 }
 
 pub fn check_transition(
     initial_chain_config_json: &str, 
     target_block_json: &str, 
-    transaction_json: &str
+    transactions_json: &str
 ) -> BlockId {   
     let config: ChainConfig = 
         serde_json::from_str(initial_chain_config_json)
@@ -73,10 +73,9 @@ pub fn check_transition(
     let height: fuel_crypto::fuel_types::BlockHeight = (u32::from(initial_height) + 1u32).into();
     let prev_root = block.header().prev_root().clone();
 
-    let script_tx: Script = 
-        serde_json::from_str(transaction_json)
-        .expect("Could not deserialize script tx");
-    let transaction: Transaction = script_tx.into();
+    let transactions: Transactions = 
+        serde_json::from_str(transactions_json)
+        .expect("Could not deserialize transactions");
 
     let mut def = PartialBlockHeader::default();
     def.consensus.prev_root = prev_root;
@@ -87,9 +86,9 @@ pub fn check_transition(
 
     let component: ExecutionTypes<Components<OnceTransactionsSource>, Block> = ExecutionTypes::Production(Components {
         header_to_produce: reproduced_block_header,
-        transactions_source: OnceTransactionsSource::new([transaction].into()),
+        transactions_source: OnceTransactionsSource::new(transactions.0),
         gas_limit: u64::MAX
-    });   
+    });
 
     let execution_result = executor.execute_without_commit(
     component,
