@@ -47,8 +47,10 @@ async fn test_one_transaction() -> anyhow::Result<()> {
     let block_height = block.header().height().deref().clone();
     let transactions = 
         srv.shared.database.get_transactions_on_blocks(block_height..block_height + 1)?
-        .unwrap(); // To be used at check_transition(_, _, transitions)
-    let _stringified_transactions = txs_stringify(transactions.clone())?;
+        .unwrap();
+    let transactions = transactions.first().unwrap();
+
+    let _stringified_transactions = txs_stringify(transactions.clone())?; // To be used at check_transition(_, _, transitions)
     
     // let _block_id = check_transition(TEST_SNAPSHOT, TEST_BLOCK, TEST_TRANSACTION);
 
