@@ -1,4 +1,4 @@
-.PHONY: start start-relay node-hardhat node node-docker build test
+.PHONY: start start-relay node-hardhat node node-docker build test dev
 
 # RISC0_BUILD_DEBUG=1 is a temporary workaround until https://github.com/risc0/risc0/pull/1257
 # ETA for this fix: v0.20.0-rc2
@@ -17,3 +17,5 @@ build:
 	cargo build
 test:
 	cargo +stable test -p test -- --nocapture
+dev:
+	cargo +stable watch -x "test -p test -- --nocapture"
