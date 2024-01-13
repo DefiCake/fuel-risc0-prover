@@ -10,3 +10,4 @@ deployments/local
 deployments/anvil
 res/integration
 blob
+out
