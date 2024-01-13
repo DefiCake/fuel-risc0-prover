@@ -1,4 +1,5 @@
 {
     "rust-analyzer.showUnlinkedFileNotification": false,
-    "rust-analyzer.checkOnSave": false
+    "rust-analyzer.rust.analyzerTargetDir": "ra_target"
+    // "rust-analyzer.checkOnSave": false
 }

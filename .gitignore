@@ -1,5 +1,6 @@
 .DS_Store
 methods/guest/Cargo.lock
+ra_target/
 target/
 typechain-types/
 artifacts

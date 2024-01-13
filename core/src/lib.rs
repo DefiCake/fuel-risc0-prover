@@ -14,7 +14,6 @@ use fuel_core_types::{
     entities::message::Message,
     blockchain::{block::Block, primitives::BlockId}, services::{executor::ExecutionTypes, block_producer::Components, p2p::Transactions}
 };
-use fuel_tx::{Script, Transaction};
 use fuel_types::{Nonce, Bytes32};
 use genesis::maybe_initialize_state;
 use serde::{Deserialize, Serialize};
