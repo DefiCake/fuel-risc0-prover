@@ -23,6 +23,9 @@ pub const TEST_SNAPSHOT: &str = include_str!("../res/test_snapshot.json");
 pub const TEST_BLOCK: &str = include_str!("../res/test_target_block.json");
 pub const TEST_TRANSACTION: &str = include_str!("../res/test_transaction.json");
 
+/**
+ * This test simulates a simple utxo transfer
+ */
 #[tokio::test]
 async fn test_one_transaction_with_artifacts() -> anyhow::Result<()> {
     let block: Block<Bytes32> = 
@@ -40,6 +43,9 @@ async fn test_one_transaction_with_artifacts() -> anyhow::Result<()> {
     Ok(())
 }
 
+/**
+ * This test simulates two UTXO transfers and a coinbase mint
+ */
 #[tokio::test]
 async fn test_two_transfers() -> anyhow::Result<()> {
 
@@ -81,5 +87,11 @@ async fn test_two_transfers() -> anyhow::Result<()> {
 
     assert_eq!(block.id(), block_id);
 
+    Ok(())
+}
+
+// Next: initialise contracts and interact with them
+#[tokio::test]
+async fn test_transactions_with_contracts() -> anyhow::Result<()> {
     Ok(())
 }
