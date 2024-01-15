@@ -12,7 +12,7 @@ use database::Database;
 use fuel_core_types::{
     blockchain::{primitives::DaBlockHeight, header::PartialBlockHeader}, 
     entities::message::Message,
-    blockchain::{block::Block, primitives::BlockId}, services::{executor::ExecutionTypes, block_producer::Components, p2p::Transactions}
+    blockchain::block::Block, services::{executor::ExecutionTypes, block_producer::Components, p2p::Transactions}
 };
 use fuel_types::{Nonce, Bytes32};
 use genesis::maybe_initialize_state;
@@ -44,7 +44,7 @@ pub fn check_transition(
     initial_chain_config_json: &str, 
     target_block_json: &str, 
     transactions_json: &str
-) -> BlockId {   
+) -> Block {   
     let config: ChainConfig = 
         serde_json::from_str(initial_chain_config_json)
         .expect("Could not parse ChainConfig JSON");
@@ -94,5 +94,7 @@ pub fn check_transition(
     Default::default()
     ).expect("Could not get execution result");
 
-    execution_result.result().block.header().hash()
+    let result_block: Block = execution_result.result().block.clone();
+
+    result_block
 }

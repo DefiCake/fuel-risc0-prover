@@ -20,10 +20,11 @@ use fuel_core_storage::{
         StorageTransaction,
         Transactional,
     },
-    Result as StorageResult,
+    Result as StorageResult, tables::SealedBlockConsensus,
 };
-use fuel_core_types::fuel_types::BlockHeight;
+use fuel_core_types::{fuel_types::BlockHeight, blockchain::{primitives::BlockId, consensus::Consensus}};
 
+use fuel_storage::StorageAsMut;
 use itertools::Itertools;
 use serde::{
     de::DeserializeOwned,
@@ -397,3 +398,26 @@ impl ChainConfigDb for Database {
 }
 
 impl ExecutorDatabaseTrait<Database> for Database {}
+
+/// The port for returned database from the executor.
+pub trait ExecutorDatabase {
+    /// Assigns the `Consensus` data to the block under the `block_id`.
+    /// Return the previous value at the `height`, if any.
+    fn seal_block(
+        &mut self,
+        block_id: &BlockId,
+        consensus: &Consensus,
+    ) -> StorageResult<Option<Consensus>>;
+}
+
+impl ExecutorDatabase for Database {
+    fn seal_block(
+        &mut self,
+        block_id: &BlockId,
+        consensus: &Consensus,
+    ) -> StorageResult<Option<Consensus>> {
+        self.storage::<SealedBlockConsensus>()
+            .insert(block_id, consensus)
+            .map_err(Into::into)
+    }
+}

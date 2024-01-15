@@ -34,13 +34,13 @@ async fn test_one_transaction_with_artifacts() -> anyhow::Result<()> {
         serde_json::from_str(TEST_BLOCK)
         .expect("Could not parse target Block");
 
-    let block_id = check_transition(
+    let result_block = check_transition(
         TEST_SNAPSHOT,
         TEST_BLOCK,
         TEST_TRANSACTION
     );
 
-    assert_eq!(block.id(), block_id);
+    assert_eq!(block.id(), result_block.id());
 
     Ok(())
 }
@@ -76,7 +76,7 @@ async fn test_two_transfers() -> anyhow::Result<()> {
 
     let stringified_transactions = txs_stringify(transactions.clone())?; // To be used at check_transition(_, _, transitions)
     
-    let block_id = check_transition(
+    let result_block = check_transition(
         stringified_initial_state.as_str(), 
         stringified_block.as_str(), 
         stringified_transactions.as_str(),
@@ -84,7 +84,7 @@ async fn test_two_transfers() -> anyhow::Result<()> {
     
     srv.stop_and_await().await.expect("Could not shutdown node");
 
-    assert_eq!(block.id(), block_id);
+    assert_eq!(block.id(), result_block.id());
 
     Ok(())
 }
@@ -120,7 +120,7 @@ async fn test_intermediate_state_transfers() -> anyhow::Result<()> {
 
     let stringified_transactions = txs_stringify(transactions.clone())?; // To be used at check_transition(_, _, transitions)
     
-    let block_id = check_transition(
+    let result_block = check_transition(
         stringified_initial_state.as_str(), 
         stringified_block.as_str(), 
         stringified_transactions.as_str(),
@@ -128,7 +128,7 @@ async fn test_intermediate_state_transfers() -> anyhow::Result<()> {
     
     srv.stop_and_await().await.expect("Could not shutdown node");
 
-    assert_eq!(block.id(), block_id);
+    assert_eq!(block.id(), result_block.id());
 
     Ok(())
 }
@@ -155,13 +155,13 @@ async fn test_deployment_transaction() -> anyhow::Result<()> {
 
     let stringified_transactions = txs_stringify(transactions.clone())?; // To be used at check_transition(_, _, transitions)
     
-    let block_id = check_transition(
+    let result_block = check_transition(
         stringified_initial_state.as_str(), 
         stringified_block.as_str(), 
         stringified_transactions.as_str(),
     );
 
-    assert_eq!(block.id(), block_id);    
+    assert_eq!(block.id(), result_block.id());    
 
     srv.stop_and_await().await.expect("Could not shutdown node");
     Ok(())
@@ -180,6 +180,7 @@ async fn test_contract_interaction() -> anyhow::Result<()> {
     let initial_state = snapshot(&srv)?;
     let stringified_initial_state = initial_state.stringify()?;
 
+    // dbg!(srv.shared.database.get_current_block()?.unwrap());
     contract
         .methods()
         .receive_funds()
@@ -190,8 +191,10 @@ async fn test_contract_interaction() -> anyhow::Result<()> {
         )?
         .call()
         .await?;
+
         
     println!("{}", stringified_initial_state.as_str());
+    
     let block = srv.shared.database.get_current_block()?.unwrap();
     let stringified_block = block_stringify(&block)?; // To be used at check_transition(_, block, _)
     
@@ -199,17 +202,25 @@ async fn test_contract_interaction() -> anyhow::Result<()> {
     let transactions = 
         srv.shared.database.get_transactions_on_blocks(block_height..block_height + 1)?
         .unwrap();
+    
+    // assert_eq!(transactions.len(), 1);
     let transactions = transactions.first().unwrap();
+
+    // dbg!(&transactions.0);
 
     let stringified_transactions = txs_stringify(transactions.clone())?; // To be used at check_transition(_, _, transitions)
     
-    let block_id = check_transition(
+    let result_block = check_transition(
         stringified_initial_state.as_str(), 
         stringified_block.as_str(), 
         stringified_transactions.as_str(),
     );
 
-    assert_eq!(block.id(), block_id);    
+    // dbg!(&block.header());
+    // dbg!(&result_block.transactions());
+    assert_eq!(block.id(), result_block.id());    
+
+
 
     srv.stop_and_await().await.expect("Could not shutdown node");
     Ok(())

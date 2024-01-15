@@ -1,4 +1,4 @@
-use crate::database::Database;
+use crate::database::{Database, ExecutorDatabase};
 use anyhow::anyhow;
 use fuel_core_chain_config::{
     ContractConfig,
@@ -47,6 +47,7 @@ use fuel_core_types::{
         ContractId,
     },
 };
+use fuel_types::BlockHeight;
 use itertools::Itertools;
 
 /// Loads state from the chain config into database
@@ -118,10 +119,50 @@ fn import_genesis_block(
         &block.compress(&chain_conf.consensus_parameters.chain_id),
     )?;
     let consensus = Consensus::Genesis(genesis);
-    let _block = SealedBlock {
+    let sealed_block = SealedBlock {
         entity: block,
         consensus,
     };
+
+    // Commit to database, from Importer service:
+    let block = &sealed_block.entity;
+    let consensus = &sealed_block.consensus;
+    let block_id = &block.id();
+    let actual_next_height = *block.header().height();
+
+    let expected_next_height = match consensus {
+        Consensus::Genesis(_) => {
+            database.latest_height().expect("NotFound");
+
+            actual_next_height
+        }
+        Consensus::PoA(_) => {
+            if actual_next_height == BlockHeight::from(0u32) {
+                panic!("ZeroNonGenericHeight");
+            }
+
+            let last_db_height = database.latest_height().expect("BlockHeight");
+            let actual_next_height: u32 = *last_db_height + 1u32;
+            BlockHeight::from(actual_next_height)
+        }
+    };
+
+    if expected_next_height != actual_next_height {
+        panic!("Expected next height mismatch");
+    }
+
+    let db_after_execution = database_transaction.as_mut();
+
+    db_after_execution
+        .seal_block(&block_id, &sealed_block.consensus)?;
+        // .should_be_unique(&expected_next_height)?;
+
+    // Update the total tx count in chain metadata
+    db_after_execution
+        // Safety: casting len to u64 since it's impossible to execute a block with more than 2^64 txs
+        .increase_tx_count(sealed_block.entity.transactions().len() as u64)?;
+
+    database_transaction.commit()?;
 
     // let importer = Importer::new(
     //     config.block_importer.clone(),

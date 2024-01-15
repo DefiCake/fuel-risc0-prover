@@ -9,7 +9,7 @@ risc0_zkvm::guest::entry!(main);
 pub fn main() {
     let Inputs {chain_config, target_block, transactions_json} = env::read();
 
-    let block_id = check_transition(&chain_config, &target_block, &transactions_json);
+    let block = check_transition(&chain_config, &target_block, &transactions_json);
 
-    env::commit_slice(&ethabi::encode(&[Token::FixedBytes(block_id.as_slice().to_vec())]));
+    env::commit_slice(&ethabi::encode(&[Token::FixedBytes(block.id().as_slice().to_vec())]));
 }
