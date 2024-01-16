@@ -15,7 +15,7 @@ use fuel_core_types::{
     blockchain::block::Block, services::{executor::ExecutionTypes, block_producer::Components, p2p::Transactions}
 };
 use fuel_types::{Nonce, Bytes32};
-use genesis::maybe_initialize_state;
+use genesis::initialize_state;
 use serde::{Deserialize, Serialize};
 
 use fuel_core_executor::{executor::{Executor, OnceTransactionsSource}, ports::RelayerPort};
@@ -38,12 +38,14 @@ pub struct Inputs {
     pub chain_config: String,
     pub target_block: String,
     pub transactions_json: String,
+    pub initial_block_json: String,
 }
 
 pub fn check_transition(
     initial_chain_config_json: &str, 
     target_block_json: &str, 
-    transactions_json: &str
+    transactions_json: &str,
+    initial_block_json: &str
 ) -> Block {   
     let config: ChainConfig = 
         serde_json::from_str(initial_chain_config_json)
@@ -51,9 +53,14 @@ pub fn check_transition(
 
     let initial_state = config.clone().initial_state.expect("Could not load initial state");
     let initial_height = initial_state.height.expect("Could not load initial height");
+    let initial_block: Block<Bytes32> = serde_json::from_str(initial_block_json).expect("Could not load initial block");
+
     let database = Database::in_memory();
     database.init(&config).expect("database.init() failed");
-    maybe_initialize_state(&config, &database).expect("Failed to initialize state");
+    initialize_state(&config, &database, &initial_block).expect("Failed to initialize state");
+
+    let core_initial_block = database.get_current_block().unwrap().unwrap();
+    dbg!(core_initial_block);
 
     let relayer: MockRelayer = MockRelayer { database: database.clone() };
 

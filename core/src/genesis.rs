@@ -51,14 +51,12 @@ use fuel_types::BlockHeight;
 use itertools::Itertools;
 
 /// Loads state from the chain config into database
-pub fn maybe_initialize_state(
+pub fn initialize_state(
     config: &ChainConfig,
     database: &Database,
+    initial_block: &Block<Bytes32>
 ) -> anyhow::Result<()> {
-    // check if chain is initialized
-    if database.ids_of_latest_block()?.is_none() {
-        import_genesis_block(config, database)?;
-    }
+    import_genesis_block(config, database, initial_block)?;
 
     Ok(())
 }
@@ -66,6 +64,7 @@ pub fn maybe_initialize_state(
 fn import_genesis_block(
     chain_conf: &ChainConfig,
     original_database: &Database,
+    initial_block: &Block<Bytes32>
 ) -> anyhow::Result<()> {
     // start a db transaction for bulk-writing
     let mut database_transaction = Transactional::transaction(original_database);
@@ -87,7 +86,9 @@ fn import_genesis_block(
         messages_root,
     };
 
-    let block = Block::new(
+    // let block = initial_block.clone();
+
+    let mut block = Block::new(
         PartialBlockHeader {
             application: ApplicationHeader::<Empty> {
                 // TODO: Set `da_height` based on the chain config.
@@ -96,7 +97,7 @@ fn import_genesis_block(
             },
             consensus: ConsensusHeader::<Empty> {
                 // The genesis is a first block, so previous root is zero.
-                prev_root: Bytes32::zeroed(),
+                prev_root: initial_block.header().prev_root().clone(),
                 // The initial height is defined by the `ChainConfig`.
                 // If it is `None` then it will be zero.
                 height: chain_conf
@@ -104,14 +105,23 @@ fn import_genesis_block(
                     .as_ref()
                     .map(|config| config.height.unwrap_or_else(|| 0u32.into()))
                     .unwrap_or_else(|| 0u32.into()),
-                time: fuel_core_types::tai64::Tai64::UNIX_EPOCH,
+                time: initial_block.header().consensus.time,
                 generated: Empty,
             },
         },
         // Genesis block doesn't have any transaction.
+        // TODO: maybe this should be initialised
         vec![],
         &[],
     );
+    
+    let header = block.header_mut();
+
+    header.application = initial_block.header().application.clone();
+    header.consensus = initial_block.header().consensus.clone();
+    header.recalculate_metadata();
+    // block.header_mut().application = initial_block.header().application.clone();
+    // block.header_mut().consensus = initial_block.header().consensus.clone();
 
     let block_id = block.id();
     database.storage::<FuelBlocks>().insert(
