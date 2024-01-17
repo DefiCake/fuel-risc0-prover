@@ -12,13 +12,14 @@ use database::Database;
 use fuel_core_types::{
     blockchain::{primitives::DaBlockHeight, header::PartialBlockHeader}, 
     entities::message::Message,
-    blockchain::block::Block, services::{executor::ExecutionTypes, block_producer::Components, p2p::Transactions}
+    blockchain::block::{Block, PartialFuelBlock}, services::{executor::ExecutionTypes, block_producer::Components, p2p::Transactions}, fuel_merkle
 };
-use fuel_types::{Nonce, Bytes32};
+use fuel_tx::Transaction;
+use fuel_types::{Nonce, Bytes32, canonical::Serialize as FuelTypesSerialize};
 use genesis::initialize_state;
 use serde::{Deserialize, Serialize};
 
-use fuel_core_executor::{executor::{Executor, OnceTransactionsSource}, ports::RelayerPort};
+use fuel_core_executor::{executor::{Executor, OnceTransactionsSource, ExecutionOptions}, ports::RelayerPort};
 
 #[derive(Clone)]
 pub struct MockRelayer {
@@ -53,14 +54,14 @@ pub fn check_transition(
 
     let initial_state = config.clone().initial_state.expect("Could not load initial state");
     let initial_height = initial_state.height.expect("Could not load initial height");
-    let initial_block: Block<Bytes32> = serde_json::from_str(initial_block_json).expect("Could not load initial block");
+    let initial_block: Block = serde_json::from_str(initial_block_json).expect("Could not load initial block");
 
     let database = Database::in_memory();
     database.init(&config).expect("database.init() failed");
     initialize_state(&config, &database, &initial_block).expect("Failed to initialize state");
 
     let core_initial_block = database.get_current_block().unwrap().unwrap();
-    dbg!(core_initial_block);
+    // dbg!(core_initial_block);
 
     let relayer: MockRelayer = MockRelayer { database: database.clone() };
 
@@ -90,18 +91,49 @@ pub fn check_transition(
 
     let reproduced_block_header: PartialBlockHeader = PartialBlockHeader { ..def };
 
-    let component: ExecutionTypes<Components<OnceTransactionsSource>, Block> = ExecutionTypes::Production(Components {
-        header_to_produce: reproduced_block_header,
-        transactions_source: OnceTransactionsSource::new(transactions.0),
+    let component: ExecutionTypes<Components<OnceTransactionsSource>, Block> = ExecutionTypes::DryRun(Components {
+        header_to_produce: reproduced_block_header.clone(),
+        transactions_source: OnceTransactionsSource::new(transactions.clone().0),
         gas_limit: u64::MAX
     });
 
-    let execution_result = executor.execute_without_commit(
-    component,
-    Default::default()
+    let test_block: PartialFuelBlock = PartialFuelBlock {
+        header: reproduced_block_header.clone(),
+        transactions: transactions.clone().0
+    };
+
+    let test: ExecutionTypes<PartialFuelBlock, Block> = ExecutionTypes::Validation(
+        Block::try_from_executed(block.header().clone(), transactions.clone().0).unwrap()
+    );
+
+    let execution_result = executor.execute_and_commit(
+        test, 
+        ExecutionOptions{ utxo_validation: true}
     ).expect("Could not get execution result");
 
-    let result_block: Block = execution_result.result().block.clone();
+    // let execution_result = executor.execute_without_commit(
+    // component,
+    // ExecutionOptions { utxo_validation: true }
+    // ).expect("Could not get execution result").into_result();
+
+    // dbg!(&execution_result.tx_status);
+    let result_block: Block = execution_result.block.clone();
+    let mut whatever = result_block.clone();
+
+
+    let does_not_validate = Block::try_from_executed(execution_result.block.header().clone(), transactions.0);
+    // dbg!(does_not_validate);
 
     result_block
+}
+
+fn generate_txns_root(transactions: &[Transaction]) -> Bytes32 {
+    let transaction_ids = transactions.iter().map(|tx| tx.to_bytes());
+    // Generate the transaction merkle root.
+    let mut transaction_tree =
+        fuel_merkle::binary::root_calculator::MerkleRootCalculator::new();
+    for id in transaction_ids {
+        transaction_tree.push(id.as_ref());
+    }
+    transaction_tree.root().into()
 }

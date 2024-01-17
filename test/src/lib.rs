@@ -5,6 +5,9 @@ pub use std::ops::Deref;
 pub use fuel_core::producer::ports::BlockProducerDatabase;
 pub use fuel_core::service::ServiceTrait;
 pub use fuel_core::types::blockchain::block::Block;
+pub use fuel_core::types::fuel_tx::UniqueIdentifier;
+pub use fuel_core::types::{fuel_tx::Transaction, services::p2p::Transactions};
+pub use fuel_crypto::fuel_types::ChainId;
 pub use fuels::{tx::Bytes32, accounts::wallet::WalletUnlocked, programs::contract::CallParameters};
 pub use prover_core::check_transition;
 
@@ -14,12 +17,14 @@ pub use crate::helpers::{
     snapshot, 
     SnapshotStringify, 
     block_stringify, 
+    block_stringify_with_txs,
     txs_stringify, 
     send_funds, 
     get_wallet_by_name, 
     AccountName,
     deploy_smart_wallet,
-    WalletContract
+    WalletContract,
+    get_current_block_with_txs
 };
 
 pub const TEST_SNAPSHOT: &str = include_str!("../res/test_snapshot.json");
@@ -56,8 +61,8 @@ async fn test_two_transfers() -> anyhow::Result<()> {
 
     let initial_state = snapshot(&srv)?;
     let stringified_initial_state = initial_state.stringify()?; // To be used at check_transition(state, _, _)
-    let initial_block = srv.shared.database.get_current_block()?.unwrap();
-    let initial_block_stringified = block_stringify(&initial_block)?;
+    let initial_block = get_current_block_with_txs(&srv.shared.database).expect("Could not obtain block with txs");    
+    let initial_block_stringified = block_stringify_with_txs(&initial_block)?;
     
     send_funds(&provider, None, None, false).await?;
     send_funds(
@@ -104,8 +109,8 @@ async fn test_intermediate_state_transfers() -> anyhow::Result<()> {
     
     let initial_state = snapshot(&srv)?;
     let stringified_initial_state = initial_state.stringify()?; // To be used at check_transition(state, _, _)
-    let initial_block = srv.shared.database.get_current_block()?.unwrap();
-    let initial_block_stringified = block_stringify(&initial_block)?;
+    let initial_block = get_current_block_with_txs(&srv.shared.database).expect("Could not obtain block with txs");    
+    let initial_block_stringified = block_stringify_with_txs(&initial_block)?;
     
 
     send_funds(
@@ -147,8 +152,8 @@ async fn test_deployment_transaction() -> anyhow::Result<()> {
 
     let initial_state = snapshot(&srv)?;
     let stringified_initial_state = initial_state.stringify()?;
-    let initial_block = srv.shared.database.get_current_block()?.unwrap();
-    let initial_block_stringified = block_stringify(&initial_block)?;
+    let initial_block = get_current_block_with_txs(&srv.shared.database).expect("Could not obtain block with txs");    
+    let initial_block_stringified = block_stringify_with_txs(&initial_block)?;
     
 
     let mut deployer = get_wallet_by_name(AccountName::Alice);
@@ -184,17 +189,21 @@ async fn test_deployment_transaction() -> anyhow::Result<()> {
 async fn test_contract_interaction() -> anyhow::Result<()> {
     let (srv, provider) = bootstrap1().await.expect("Could not bootstrap node");
 
+    let chain_id = provider.network_info().await.unwrap().chain_id();
+    let chain_id = ChainId::from(chain_id.deref().clone());
+
     let mut deployer = get_wallet_by_name(AccountName::Alice);
     deployer.set_provider(provider);
     let contract: WalletContract<WalletUnlocked> = deploy_smart_wallet(&deployer).await.expect("Could not deploy smart wallet");
     
     let initial_state = snapshot(&srv)?;
     let stringified_initial_state = initial_state.clone().stringify()?;
-    let initial_block = srv.shared.database.get_current_block()?.unwrap();
-    let initial_block_stringified = block_stringify(&initial_block)?;
-    
 
-    dbg!(srv.shared.database.get_current_block()?.unwrap());
+    let initial_block = get_current_block_with_txs(&srv.shared.database).expect("Could not obtain block with txs");    
+    let initial_block_stringified = block_stringify_with_txs(&initial_block)?;
+    
+    // dbg!(&initial_block.compress(&chain_id));
+
     contract
         .methods()
         .receive_funds()
@@ -216,6 +225,9 @@ async fn test_contract_interaction() -> anyhow::Result<()> {
         .unwrap();
     
     let transactions = transactions.first().unwrap();
+    // dbg!("executed transactions");
+    let tpm: Vec<fuel_crypto::fuel_types::Bytes32> = transactions.clone().0.iter().map(|t| t.id(&chain_id).clone()).collect();
+    // dbg!(tpm);
 
     let stringified_transactions = txs_stringify(transactions.clone())?; // To be used at check_transition(_, _, transitions)
     
@@ -226,8 +238,9 @@ async fn test_contract_interaction() -> anyhow::Result<()> {
         initial_block_stringified.as_str()
     );
 
-    dbg!(block.header());
-    dbg!(result_block.header());
+    // dbg!("Worth trying");
+    // dbg!(&block);
+    // dbg!(&result_block);
 
     assert_eq!(block.id(), result_block.id());    
 

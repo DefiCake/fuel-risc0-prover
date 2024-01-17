@@ -35,6 +35,12 @@ pub fn block_stringify(block: &Block<Bytes32>) -> anyhow::Result<String> {
     Ok(stringified)    
 }
 
+pub fn block_stringify_with_txs(block: &Block) -> anyhow::Result<String> {
+    let stringified = serde_json::to_string_pretty(block)?;
+
+    Ok(stringified)
+}
+
 pub fn txs_stringify(txs: Transactions) -> anyhow::Result<String> {
     let stringified = serde_json::to_string_pretty(&txs)?;
 

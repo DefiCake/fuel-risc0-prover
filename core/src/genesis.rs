@@ -21,7 +21,7 @@ use fuel_core_storage::{
 };
 use fuel_core_types::{
     blockchain::{
-        block::Block,
+        block::{Block, PartialFuelBlock},
         consensus::{Genesis, Consensus},
         header::{
             ApplicationHeader,
@@ -54,7 +54,7 @@ use itertools::Itertools;
 pub fn initialize_state(
     config: &ChainConfig,
     database: &Database,
-    initial_block: &Block<Bytes32>
+    initial_block: &Block
 ) -> anyhow::Result<()> {
     import_genesis_block(config, database, initial_block)?;
 
@@ -64,7 +64,7 @@ pub fn initialize_state(
 fn import_genesis_block(
     chain_conf: &ChainConfig,
     original_database: &Database,
-    initial_block: &Block<Bytes32>
+    initial_block: &Block
 ) -> anyhow::Result<()> {
     // start a db transaction for bulk-writing
     let mut database_transaction = Transactional::transaction(original_database);
@@ -87,41 +87,33 @@ fn import_genesis_block(
     };
 
     // let block = initial_block.clone();
-
-    let mut block = Block::new(
-        PartialBlockHeader {
-            application: ApplicationHeader::<Empty> {
-                // TODO: Set `da_height` based on the chain config.
-                da_height: Default::default(),
-                generated: Empty,
-            },
-            consensus: ConsensusHeader::<Empty> {
-                // The genesis is a first block, so previous root is zero.
-                prev_root: initial_block.header().prev_root().clone(),
-                // The initial height is defined by the `ChainConfig`.
-                // If it is `None` then it will be zero.
-                height: chain_conf
-                    .initial_state
-                    .as_ref()
-                    .map(|config| config.height.unwrap_or_else(|| 0u32.into()))
-                    .unwrap_or_else(|| 0u32.into()),
-                time: initial_block.header().consensus.time,
-                generated: Empty,
-            },
-        },
-        // Genesis block doesn't have any transaction.
-        // TODO: maybe this should be initialised
-        vec![],
-        &[],
-    );
     
-    let header = block.header_mut();
 
-    header.application = initial_block.header().application.clone();
-    header.consensus = initial_block.header().consensus.clone();
-    header.recalculate_metadata();
-    // block.header_mut().application = initial_block.header().application.clone();
-    // block.header_mut().consensus = initial_block.header().consensus.clone();
+    let header = PartialBlockHeader {
+        application: ApplicationHeader::<Empty> {
+            // TODO: Set `da_height` based on the chain config.
+            da_height: Default::default(),
+            generated: Empty,
+        },
+        consensus: ConsensusHeader::<Empty> {
+            // The genesis is a first block, so previous root is zero.
+            prev_root: initial_block.header().prev_root().clone(),
+            // The initial height is defined by the `ChainConfig`.
+            // If it is `None` then it will be zero.
+            height: chain_conf
+                .initial_state
+                .as_ref()
+                .map(|config| config.height.unwrap_or_else(|| 0u32.into()))
+                .unwrap_or_else(|| 0u32.into()),
+            time: initial_block.header().consensus.time,
+            generated: Empty,
+        },
+    };
+
+    let block = PartialFuelBlock {
+        header,
+        transactions: initial_block.transactions().to_vec()
+    }.generate(&vec![]);
 
     let block_id = block.id();
     database.storage::<FuelBlocks>().insert(

@@ -10,7 +10,7 @@ derive_more = { workspace = true }
 enum-iterator = { workspace = true }
 fuel-core-chain-config = { workspace = true, default-features = false, features = ["risc0"] }
 fuel-core-database = { workspace = true }
-fuel-core-executor = { workspace = true }
+fuel-core-executor = { workspace = true, features = ["test-helpers"] }
 # fuel-core-services = { workspace = true } # Wont compile in risc0 - zkvm 
 fuel-core-storage = { workspace = true, features = ["test-helpers"] }
 fuel-core-types = { workspace = true, default-features = false, features = ["test-helpers"] }
