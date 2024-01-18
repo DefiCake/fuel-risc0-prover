@@ -1,6 +1,7 @@
 mod helpers;
 
 pub use std::ops::Deref;
+pub use std::str::FromStr;
 
 pub use fuel_core::producer::ports::BlockProducerDatabase;
 pub use fuel_core::service::ServiceTrait;
@@ -8,6 +9,7 @@ pub use fuel_core::types::blockchain::block::Block;
 pub use fuel_core::types::fuel_tx::UniqueIdentifier;
 pub use fuel_core::types::{fuel_tx::Transaction, services::p2p::Transactions};
 pub use fuel_crypto::fuel_types::ChainId;
+
 pub use fuels::{tx::Bytes32, accounts::wallet::WalletUnlocked, programs::contract::CallParameters};
 pub use prover_core::check_transition;
 
@@ -189,9 +191,6 @@ async fn test_deployment_transaction() -> anyhow::Result<()> {
 async fn test_contract_interaction() -> anyhow::Result<()> {
     let (srv, provider) = bootstrap1().await.expect("Could not bootstrap node");
 
-    let chain_id = provider.network_info().await.unwrap().chain_id();
-    let chain_id = ChainId::from(chain_id.deref().clone());
-
     let mut deployer = get_wallet_by_name(AccountName::Alice);
     deployer.set_provider(provider);
     let contract: WalletContract<WalletUnlocked> = deploy_smart_wallet(&deployer).await.expect("Could not deploy smart wallet");
@@ -201,8 +200,12 @@ async fn test_contract_interaction() -> anyhow::Result<()> {
 
     let initial_block = get_current_block_with_txs(&srv.shared.database).expect("Could not obtain block with txs");    
     let initial_block_stringified = block_stringify_with_txs(&initial_block)?;
-    
-    // dbg!(&initial_block.compress(&chain_id));
+
+    let contract_id = fuel_types::ContractId::from_str("0xa270d51d7bc2ea9adb9fdf341e029564805ba76b373abfa98c83100467eed321").unwrap();
+    let mut contract_ref = fuel_core_executor::refs::ContractRef::new(srv.shared.database.clone(), contract_id);
+    dbg!("test, before");
+    dbg!(contract_ref.balance_root().unwrap());
+    // dbg!(srv.shared.database.get_contract_config_by_id(contract_id).unwrap().state);
 
     contract
         .methods()
@@ -225,9 +228,7 @@ async fn test_contract_interaction() -> anyhow::Result<()> {
         .unwrap();
     
     let transactions = transactions.first().unwrap();
-    // dbg!("executed transactions");
-    let tpm: Vec<fuel_crypto::fuel_types::Bytes32> = transactions.clone().0.iter().map(|t| t.id(&chain_id).clone()).collect();
-    // dbg!(tpm);
+
 
     let stringified_transactions = txs_stringify(transactions.clone())?; // To be used at check_transition(_, _, transitions)
     
@@ -238,12 +239,7 @@ async fn test_contract_interaction() -> anyhow::Result<()> {
         initial_block_stringified.as_str()
     );
 
-    // dbg!("Worth trying");
-    // dbg!(&block);
-    // dbg!(&result_block);
-
     assert_eq!(block.id(), result_block.id());    
-
 
 
     srv.stop_and_await().await.expect("Could not shutdown node");

@@ -190,9 +190,12 @@ impl Database {
         // Merkle data:
         // - Asset key should be converted into `MerkleTreeKey` by `new` function that hashes them.
         // - The balance value are original.
-        let balances = balances
-            .into_iter()
-            .map(|(asset, value)| (MerkleTreeKey::new(asset), value.to_be_bytes()));
+        let balances = balances.into_iter().map(|(asset, value)| {
+            (
+                MerkleTreeKey::new(ContractsAssetKey::new(contract_id, &asset)),
+                value.to_be_bytes(),
+            )
+        });
         let (root, nodes) = in_memory::MerkleTree::nodes_from_set(balances);
         self.batch_insert(ContractsAssetsMerkleData::column(), nodes.into_iter())?;
         let metadata = SparseMerkleMetadata { root };

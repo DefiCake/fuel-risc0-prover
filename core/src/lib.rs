@@ -2,24 +2,25 @@ pub mod database;
 pub mod state;
 pub mod genesis;
 pub mod executor;
-// pub mod config;
 
-use std::sync::Arc;
+use std::{sync::Arc, str::FromStr};
 
 use fuel_core_chain_config::ChainConfig;
-use database::Database;
+
+// pub use fuel_core::database::Database;
+pub use database::Database;
 
 use fuel_core_types::{
     blockchain::{primitives::DaBlockHeight, header::PartialBlockHeader}, 
     entities::message::Message,
-    blockchain::block::{Block, PartialFuelBlock}, services::{executor::ExecutionTypes, block_producer::Components, p2p::Transactions}, fuel_merkle
+    blockchain::block::Block, services::{executor::ExecutionTypes, p2p::Transactions}
 };
-use fuel_tx::Transaction;
-use fuel_types::{Nonce, Bytes32, canonical::Serialize as FuelTypesSerialize};
+
+use fuel_types::{Nonce, Bytes32};
 use genesis::initialize_state;
 use serde::{Deserialize, Serialize};
 
-use fuel_core_executor::{executor::{Executor, OnceTransactionsSource, ExecutionOptions}, ports::RelayerPort};
+use fuel_core_executor::{executor::{Executor, ExecutionOptions}, ports::RelayerPort};
 
 #[derive(Clone)]
 pub struct MockRelayer {
@@ -60,8 +61,11 @@ pub fn check_transition(
     database.init(&config).expect("database.init() failed");
     initialize_state(&config, &database, &initial_block).expect("Failed to initialize state");
 
-    let core_initial_block = database.get_current_block().unwrap().unwrap();
-    // dbg!(core_initial_block);
+    // Core of the issue is state_root() is different when initializing the state
+    let contract_id = fuel_types::ContractId::from_str("0xa270d51d7bc2ea9adb9fdf341e029564805ba76b373abfa98c83100467eed321").unwrap();
+    let mut contract_ref = fuel_core_executor::refs::ContractRef::new(database.clone(), contract_id);
+    dbg!(contract_ref.balance_root().unwrap());
+    // // dbg!(database.get_contract_config_by_id(contract_id).unwrap().state);
 
     let relayer: MockRelayer = MockRelayer { database: database.clone() };
 
@@ -70,6 +74,9 @@ pub fn check_transition(
         database: database.clone(),
         config: Arc::new(Default::default()),
     };
+
+    // let core_initial_block = database.get_current_block().unwrap().unwrap();
+    // dbg!(core_initial_block);
 
     let block: Block<Bytes32> = 
         serde_json::from_str(target_block_json)
@@ -89,51 +96,50 @@ pub fn check_transition(
     def.consensus.time = time;
     def.consensus.height = height;
 
-    let reproduced_block_header: PartialBlockHeader = PartialBlockHeader { ..def };
+    
+    // ////////////////////////////////////
+    // EXECUTION MODE: VALIDATION
+    // ///////////////////////////////////
 
-    let component: ExecutionTypes<Components<OnceTransactionsSource>, Block> = ExecutionTypes::DryRun(Components {
-        header_to_produce: reproduced_block_header.clone(),
-        transactions_source: OnceTransactionsSource::new(transactions.clone().0),
-        gas_limit: u64::MAX
-    });
-
-    let test_block: PartialFuelBlock = PartialFuelBlock {
-        header: reproduced_block_header.clone(),
-        transactions: transactions.clone().0
-    };
-
-    let test: ExecutionTypes<PartialFuelBlock, Block> = ExecutionTypes::Validation(
+    let _test_block = Block::try_from_executed(block.header().clone(), transactions.clone().0).unwrap();
+    let test: ExecutionTypes<fuel_core_types::blockchain::block::PartialFuelBlock, Block> = ExecutionTypes::Validation(
         Block::try_from_executed(block.header().clone(), transactions.clone().0).unwrap()
     );
 
+    // dbg!(test_block.compress(&executor.config.consensus_parameters.chain_id));
+    // dbg!(test_block);
+    
     let execution_result = executor.execute_and_commit(
         test, 
-        ExecutionOptions{ utxo_validation: true}
+        ExecutionOptions{ utxo_validation: false}
     ).expect("Could not get execution result");
 
+    // ////////////////////////////////////
+    // END EXECUTION MODE: VALIDATION
+    // ///////////////////////////////////
+    
+    // ////////////////////////////////////
+    // EXECUTION MODE: PRODUCTION
+    // ///////////////////////////////////
+
+    // let reproduced_block_header: PartialBlockHeader = PartialBlockHeader { ..def };
+    // let component: ExecutionTypes<fuel_core_types::services::block_producer::Components<fuel_core_executor::executor::OnceTransactionsSource>, Block> = ExecutionTypes::Production(fuel_core_types::services::block_producer::Components {
+    //     header_to_produce: reproduced_block_header.clone(),
+    //     transactions_source: fuel_core_executor::executor::OnceTransactionsSource::new(transactions.clone().0),
+    //     gas_limit: u64::MAX
+    // });
     // let execution_result = executor.execute_without_commit(
     // component,
     // ExecutionOptions { utxo_validation: true }
     // ).expect("Could not get execution result").into_result();
 
-    // dbg!(&execution_result.tx_status);
+    dbg!(&execution_result.tx_status);
+
+    // ////////////////////////////////////
+    // END EXECUTION MODE: PRODUCTION
+    // ///////////////////////////////////
+
     let result_block: Block = execution_result.block.clone();
-    let mut whatever = result_block.clone();
-
-
-    let does_not_validate = Block::try_from_executed(execution_result.block.header().clone(), transactions.0);
-    // dbg!(does_not_validate);
 
     result_block
-}
-
-fn generate_txns_root(transactions: &[Transaction]) -> Bytes32 {
-    let transaction_ids = transactions.iter().map(|tx| tx.to_bytes());
-    // Generate the transaction merkle root.
-    let mut transaction_tree =
-        fuel_merkle::binary::root_calculator::MerkleRootCalculator::new();
-    for id in transaction_ids {
-        transaction_tree.push(id.as_ref());
-    }
-    transaction_tree.root().into()
 }

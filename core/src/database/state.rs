@@ -190,9 +190,13 @@ impl Database {
         // Merkle data:
         // - State key should be converted into `MerkleTreeKey` by `new` function that hashes them.
         // - The state value are original.
-        let slots = slots
-            .into_iter()
-            .map(|(key, value)| (MerkleTreeKey::new(key), value));
+        let slots = slots.into_iter().map(|(key, value)| {
+            (
+                MerkleTreeKey::new(ContractsStateKey::new(contract_id, &key)),
+                value,
+            )
+        });
+
         let (root, nodes) = in_memory::MerkleTree::nodes_from_set(slots);
         self.batch_insert(ContractsStateMerkleData::column(), nodes.into_iter())?;
         let metadata = SparseMerkleMetadata { root };

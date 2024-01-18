@@ -7,6 +7,8 @@ edition = "2021"
 anyhow = { workspace = true }
 fuels={version = "0.54.0", features=["std", "fuel-core-lib"]}
 fuel-core = { workspace = true, features = ["relayer"] }
+fuel-core-executor = { workspace = true, features = ["test-helpers"] }
+fuel-types = { workspace = true, default-features = false }
 fuel-crypto = { workspace = true }
 prover-core = { workspace = true }
 serde = { workspace = true }

@@ -86,9 +86,6 @@ fn import_genesis_block(
         messages_root,
     };
 
-    // let block = initial_block.clone();
-    
-
     let header = PartialBlockHeader {
         application: ApplicationHeader::<Empty> {
             // TODO: Set `da_height` based on the chain config.
@@ -96,7 +93,6 @@ fn import_genesis_block(
             generated: Empty,
         },
         consensus: ConsensusHeader::<Empty> {
-            // The genesis is a first block, so previous root is zero.
             prev_root: initial_block.header().prev_root().clone(),
             // The initial height is defined by the `ChainConfig`.
             // If it is `None` then it will be zero.
@@ -109,7 +105,7 @@ fn import_genesis_block(
             generated: Empty,
         },
     };
-
+    
     let block = PartialFuelBlock {
         header,
         transactions: initial_block.transactions().to_vec()
@@ -121,7 +117,7 @@ fn import_genesis_block(
         &block.compress(&chain_conf.consensus_parameters.chain_id),
     )?;
     let consensus = Consensus::Genesis(genesis);
-    let sealed_block = SealedBlock {
+        let sealed_block = SealedBlock {
         entity: block,
         consensus,
     };
@@ -135,7 +131,6 @@ fn import_genesis_block(
     let expected_next_height = match consensus {
         Consensus::Genesis(_) => {
             database.latest_height().expect("NotFound");
-
             actual_next_height
         }
         Consensus::PoA(_) => {
@@ -155,9 +150,7 @@ fn import_genesis_block(
 
     let db_after_execution = database_transaction.as_mut();
 
-    db_after_execution
-        .seal_block(&block_id, &sealed_block.consensus)?;
-        // .should_be_unique(&expected_next_height)?;
+    db_after_execution.seal_block(&block_id, &sealed_block.consensus)?;
 
     // Update the total tx count in chain metadata
     db_after_execution
@@ -176,6 +169,7 @@ fn import_genesis_block(
     //     ImportResult::new_from_local(block, vec![]),
     //     database_transaction,
     // ))?;
+    
     Ok(())
 }
 
@@ -341,6 +335,9 @@ fn init_contract_state(
     // insert state related to contract
     if let Some(contract_state) = &contract.state {
         db.init_contract_state(contract_id, contract_state.iter().map(Clone::clone))?;
+
+        // let mut database = Database::in_memory();
+        // database.init_contract_state(contract_id, contract_state.iter().map(Clone::clone))?;
     }
     Ok(())
 }
