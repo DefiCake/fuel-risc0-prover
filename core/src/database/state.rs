@@ -35,12 +35,9 @@ use fuel_core_types::{
     },
 };
 use itertools::Itertools;
-use std::{
-    borrow::{
-        BorrowMut,
-        Cow,
-    },
-    ops::Deref,
+use std::borrow::{
+    BorrowMut,
+    Cow,
 };
 
 impl StorageInspect<ContractsState> for Database {
@@ -84,10 +81,9 @@ impl StorageMutate<ContractsState> for Database {
             MerkleTree::load(storage, &root)
                 .map_err(|err| StorageError::Other(anyhow::anyhow!("{err:?}")))?;
 
-        let state_key = *key.state_key().deref();
         // Update the contract's key-value dataset. The key is the state key and
         // the value is the 32 bytes
-        tree.update(MerkleTreeKey::new(state_key), value.as_slice())
+        tree.update(MerkleTreeKey::new(key), value.as_slice())
             .map_err(|err| StorageError::Other(anyhow::anyhow!("{err:?}")))?;
 
         // Generate new metadata for the updated tree
@@ -120,10 +116,9 @@ impl StorageMutate<ContractsState> for Database {
                 MerkleTree::load(storage, &root)
                     .map_err(|err| StorageError::Other(anyhow::anyhow!("{err:?}")))?;
 
-            let state_key = *key.state_key().deref();
             // Update the contract's key-value dataset. The key is the state key and
             // the value is the 32 bytes
-            tree.delete(MerkleTreeKey::new(state_key))
+            tree.delete(MerkleTreeKey::new(key))
                 .map_err(|err| StorageError::Other(anyhow::anyhow!("{err:?}")))?;
 
             let root = tree.root();
@@ -196,7 +191,6 @@ impl Database {
                 value,
             )
         });
-
         let (root, nodes) = in_memory::MerkleTree::nodes_from_set(slots);
         self.batch_insert(ContractsStateMerkleData::column(), nodes.into_iter())?;
         let metadata = SparseMerkleMetadata { root };

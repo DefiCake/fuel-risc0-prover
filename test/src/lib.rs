@@ -201,12 +201,6 @@ async fn test_contract_interaction() -> anyhow::Result<()> {
     let initial_block = get_current_block_with_txs(&srv.shared.database).expect("Could not obtain block with txs");    
     let initial_block_stringified = block_stringify_with_txs(&initial_block)?;
 
-    let contract_id = fuel_types::ContractId::from_str("0xa270d51d7bc2ea9adb9fdf341e029564805ba76b373abfa98c83100467eed321").unwrap();
-    let mut contract_ref = fuel_core_executor::refs::ContractRef::new(srv.shared.database.clone(), contract_id);
-    dbg!("test, before");
-    dbg!(contract_ref.balance_root().unwrap());
-    // dbg!(srv.shared.database.get_contract_config_by_id(contract_id).unwrap().state);
-
     contract
         .methods()
         .receive_funds()
@@ -228,8 +222,7 @@ async fn test_contract_interaction() -> anyhow::Result<()> {
         .unwrap();
     
     let transactions = transactions.first().unwrap();
-
-
+    
     let stringified_transactions = txs_stringify(transactions.clone())?; // To be used at check_transition(_, _, transitions)
     
     let result_block = check_transition(

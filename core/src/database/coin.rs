@@ -18,17 +18,17 @@ use fuel_core_storage::{
     StorageInspect,
     StorageMutate,
 };
-// use fuel_core_txpool::types::TxId;
 use fuel_core_types::{
     entities::coins::coin::CompressedCoin,
     fuel_tx::{
         Address,
         Bytes32,
         UtxoId,
-        TxId
     },
 };
 use std::borrow::Cow;
+
+pub type TxId = Bytes32;
 
 // TODO: Reuse `fuel_vm::storage::double_key` macro.
 pub fn owner_coin_id_key(owner: &Address, coin_id: &UtxoId) -> OwnedCoinKey {

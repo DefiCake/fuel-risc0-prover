@@ -3,7 +3,7 @@ pub mod state;
 pub mod genesis;
 pub mod executor;
 
-use std::{sync::Arc, str::FromStr};
+use std::sync::Arc;
 
 use fuel_core_chain_config::ChainConfig;
 
@@ -62,9 +62,9 @@ pub fn check_transition(
     initialize_state(&config, &database, &initial_block).expect("Failed to initialize state");
 
     // Core of the issue is state_root() is different when initializing the state
-    let contract_id = fuel_types::ContractId::from_str("0xa270d51d7bc2ea9adb9fdf341e029564805ba76b373abfa98c83100467eed321").unwrap();
-    let mut contract_ref = fuel_core_executor::refs::ContractRef::new(database.clone(), contract_id);
-    dbg!(contract_ref.balance_root().unwrap());
+    // let contract_id = fuel_types::ContractId::from_str("0xa270d51d7bc2ea9adb9fdf341e029564805ba76b373abfa98c83100467eed321").unwrap();
+    // let mut contract_ref = fuel_core_executor::refs::ContractRef::new(database.clone(), contract_id);
+    // dbg!(contract_ref.balance_root().unwrap());
     // // dbg!(database.get_contract_config_by_id(contract_id).unwrap().state);
 
     let relayer: MockRelayer = MockRelayer { database: database.clone() };
@@ -101,7 +101,6 @@ pub fn check_transition(
     // EXECUTION MODE: VALIDATION
     // ///////////////////////////////////
 
-    let _test_block = Block::try_from_executed(block.header().clone(), transactions.clone().0).unwrap();
     let test: ExecutionTypes<fuel_core_types::blockchain::block::PartialFuelBlock, Block> = ExecutionTypes::Validation(
         Block::try_from_executed(block.header().clone(), transactions.clone().0).unwrap()
     );
@@ -133,12 +132,12 @@ pub fn check_transition(
     // ExecutionOptions { utxo_validation: true }
     // ).expect("Could not get execution result").into_result();
 
-    dbg!(&execution_result.tx_status);
-
+    
     // ////////////////////////////////////
     // END EXECUTION MODE: PRODUCTION
     // ///////////////////////////////////
-
+    
+    // dbg!(&execution_result.block.transactions());
     let result_block: Block = execution_result.block.clone();
 
     result_block

@@ -36,12 +36,9 @@ use fuel_core_types::{
     },
 };
 use itertools::Itertools;
-use std::{
-    borrow::{
-        BorrowMut,
-        Cow,
-    },
-    ops::Deref,
+use std::borrow::{
+    BorrowMut,
+    Cow,
 };
 
 impl StorageInspect<ContractsAssets> for Database {
@@ -85,10 +82,9 @@ impl StorageMutate<ContractsAssets> for Database {
             MerkleTree::load(storage, &root)
                 .map_err(|err| StorageError::Other(anyhow::anyhow!("{err:?}")))?;
 
-        let asset_id = *key.asset_id().deref();
         // Update the contact's key-value dataset. The key is the asset id and the
         // value the Word
-        tree.update(MerkleTreeKey::new(asset_id), value.to_be_bytes().as_slice())
+        tree.update(MerkleTreeKey::new(key), value.to_be_bytes().as_slice())
             .map_err(|err| StorageError::Other(anyhow::anyhow!("{err:?}")))?;
 
         // Generate new metadata for the updated tree
@@ -121,10 +117,9 @@ impl StorageMutate<ContractsAssets> for Database {
                 MerkleTree::load(storage, &root)
                     .map_err(|err| StorageError::Other(anyhow::anyhow!("{err:?}")))?;
 
-            let asset_id = *key.asset_id().deref();
             // Update the contract's key-value dataset. The key is the asset id and
             // the value is the Word
-            tree.delete(MerkleTreeKey::new(asset_id))
+            tree.delete(MerkleTreeKey::new(key))
                 .map_err(|err| StorageError::Other(anyhow::anyhow!("{err:?}")))?;
 
             let root = tree.root();
