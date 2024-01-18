@@ -19,21 +19,21 @@ derive_more = { version = "0.99" }
 enum-iterator = "1.2"
 ethers = {version = "=2.0.8"}
 ethabi = "18.0.0"
-fuel-core = { git = "https://github.com/DefiCake/fuel-core", rev="7e4b21abbbd1c5a38a531bf5051dbc868af86b32", default-features = false }
-fuel-core-chain-config = { git = "https://github.com/DefiCake/fuel-core", rev="7e4b21abbbd1c5a38a531bf5051dbc868af86b32", default-features = false }
-fuel-core-database = { git = "https://github.com/DefiCake/fuel-core", rev="7e4b21abbbd1c5a38a531bf5051dbc868af86b32", default-features = false }
-fuel-core-executor = { git = "https://github.com/DefiCake/fuel-core", rev="7e4b21abbbd1c5a38a531bf5051dbc868af86b32", default-features = false }
-fuel-core-importer = { git = "https://github.com/DefiCake/fuel-core", rev="7e4b21abbbd1c5a38a531bf5051dbc868af86b32", default-features = false }
-fuel-core-poa = { git = "https://github.com/DefiCake/fuel-core", rev="7e4b21abbbd1c5a38a531bf5051dbc868af86b32", default-features = false }
-fuel-core-services = { git = "https://github.com/DefiCake/fuel-core", rev="7e4b21abbbd1c5a38a531bf5051dbc868af86b32", default-features = false }
-fuel-core-storage = { git = "https://github.com/DefiCake/fuel-core", rev="7e4b21abbbd1c5a38a531bf5051dbc868af86b32", default-features = false }
-fuel-core-types = { git = "https://github.com/DefiCake/fuel-core", rev="7e4b21abbbd1c5a38a531bf5051dbc868af86b32", default-features = false }
-fuel-core-txpool = { git = "https://github.com/DefiCake/fuel-core", rev="7e4b21abbbd1c5a38a531bf5051dbc868af86b32", default-features = false }
-fuel-crypto = { git = "https://github.com/DefiCake/fuel-vm", rev="5550d765cf8a91a40702bb19561f81d00576c536",  default-features = false}
-fuel-storage = { git = "https://github.com/DefiCake/fuel-vm", rev="5550d765cf8a91a40702bb19561f81d00576c536",  default-features = false}
-fuel-tx = { git = "https://github.com/DefiCake/fuel-vm", rev="5550d765cf8a91a40702bb19561f81d00576c536", default-features = false, features = ["builder"]}
-fuel-types = { git = "https://github.com/DefiCake/fuel-vm", rev="5550d765cf8a91a40702bb19561f81d00576c536",  default-features = false}
-fuel-vm = { git = "https://github.com/DefiCake/fuel-vm", rev="5550d765cf8a91a40702bb19561f81d00576c536",  default-features = false, features = ["serde", "alloc"]}
+fuel-core = { git = "https://github.com/DefiCake/fuel-core", rev="88ede4261047d771b279665dde3811adb09f8bcf", default-features = false }
+fuel-core-chain-config = { git = "https://github.com/DefiCake/fuel-core", rev="88ede4261047d771b279665dde3811adb09f8bcf", default-features = false }
+fuel-core-database = { git = "https://github.com/DefiCake/fuel-core", rev="88ede4261047d771b279665dde3811adb09f8bcf", default-features = false }
+fuel-core-executor = { git = "https://github.com/DefiCake/fuel-core", rev="88ede4261047d771b279665dde3811adb09f8bcf", default-features = false }
+fuel-core-importer = { git = "https://github.com/DefiCake/fuel-core", rev="88ede4261047d771b279665dde3811adb09f8bcf", default-features = false }
+fuel-core-poa = { git = "https://github.com/DefiCake/fuel-core", rev="88ede4261047d771b279665dde3811adb09f8bcf", default-features = false }
+fuel-core-services = { git = "https://github.com/DefiCake/fuel-core", rev="88ede4261047d771b279665dde3811adb09f8bcf", default-features = false }
+fuel-core-storage = { git = "https://github.com/DefiCake/fuel-core", rev="88ede4261047d771b279665dde3811adb09f8bcf", default-features = false }
+fuel-core-types = { git = "https://github.com/DefiCake/fuel-core", rev="88ede4261047d771b279665dde3811adb09f8bcf", default-features = false }
+fuel-core-txpool = { git = "https://github.com/DefiCake/fuel-core", rev="88ede4261047d771b279665dde3811adb09f8bcf", default-features = false }
+fuel-crypto = { version = "0.43.1",  default-features = false}
+fuel-storage = { version = "0.43.1",  default-features = false}
+fuel-tx = { version = "0.43.1", default-features = false, features = ["builder"]}
+fuel-types = { version = "0.43.1",  default-features = false}
+fuel-vm = { version = "0.43.1",  default-features = false, features = ["serde", "alloc"]}
 hex = "0.4.3"
 itertools = "0.10"
 primitive-types = "0.12"
