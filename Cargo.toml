@@ -52,6 +52,13 @@ strum_macros = "0.24"
 thiserror = "1.0"
 tokio = { version = "1.19", features = ["full", "sync"] }
 
+[patch.crates-io]
+fuel-crypto = { git = "https://github.com/DefiCake/fuel-vm", rev = "917ea7c38e5dc34e735295a7e47af3308011be26" }
+fuel-storage = { git = "https://github.com/DefiCake/fuel-vm", rev = "917ea7c38e5dc34e735295a7e47af3308011be26" }
+fuel-tx = { git = "https://github.com/DefiCake/fuel-vm", rev = "917ea7c38e5dc34e735295a7e47af3308011be26" }
+fuel-types = { git = "https://github.com/DefiCake/fuel-vm", rev = "917ea7c38e5dc34e735295a7e47af3308011be26" }
+fuel-vm = { git = "https://github.com/DefiCake/fuel-vm", rev = "917ea7c38e5dc34e735295a7e47af3308011be26" }
+
 # Always optimize; building and running the guest takes much longer without optimization.
 [profile.dev]
 opt-level = 3

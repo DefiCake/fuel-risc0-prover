@@ -1,13 +1,20 @@
-use fuel_core::{service::FuelService, chain_config::{StateConfig, ChainConfig}, types::{blockchain::block::Block, services::p2p::Transactions}};
+use fuel_core::{service::FuelService, chain_config::{StateConfig, ChainConfig, CoinConfig}, types::{blockchain::block::Block, services::p2p::Transactions}};
 use fuel_crypto::fuel_types::Bytes32;
 
 pub fn snapshot(fuel_service: &FuelService) -> anyhow::Result<ChainConfig> {
     let config = &fuel_service.shared.config.chain_conf;
 
     let state_conf = StateConfig::generate_state_config(fuel_service.shared.database.clone())?;
+
+    let coins: Vec<CoinConfig> = state_conf.clone().coins.unwrap().iter().map(|coin| {
+        CoinConfig {
+            tx_pointer_block_height: None,
+            ..coin.clone()
+        }
+    }).collect();
     
     let chain_conf = ChainConfig {
-        initial_state: Some(state_conf),
+        initial_state: Some(StateConfig { coins: Some(coins), ..state_conf}),
         ..config.clone()
     };
 

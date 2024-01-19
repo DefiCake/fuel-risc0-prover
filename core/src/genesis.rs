@@ -1,5 +1,5 @@
-// use crate::database::{Database, ExecutorDatabase};
-use fuel_core::database::Database;
+use crate::database::Database;
+// use fuel_core::database::Database;
 use anyhow::anyhow;
 use fuel_core_chain_config::{
     ContractConfig,

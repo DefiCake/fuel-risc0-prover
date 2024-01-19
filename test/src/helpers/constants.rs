@@ -1,4 +1,4 @@
-use fuels::accounts::wallet::WalletUnlocked;
+use fuels::accounts::{wallet::WalletUnlocked, provider::Provider};
 
 pub const DEFAULT_MNEMONIC_PHRASE: &str = "test test test test test test test test test test test junk";
 pub const N_ACCOUNTS: u8 = 20;
@@ -18,7 +18,13 @@ pub enum AccountName {
     Mallory = 10,
 }
 
-pub fn get_wallet_by_name(name: AccountName) -> WalletUnlocked {
+pub fn get_wallet_by_name(name: AccountName, provider: Option<Provider>) -> WalletUnlocked {
     let n = name as u8;
-    WalletUnlocked::new_from_mnemonic_phrase_with_path(DEFAULT_MNEMONIC_PHRASE, None, format!("m/44'/60'/0'/0/{}", n).as_str()).unwrap()
+    let mut wallet = WalletUnlocked::new_from_mnemonic_phrase_with_path(DEFAULT_MNEMONIC_PHRASE, None, format!("m/44'/60'/0'/0/{}", n).as_str()).unwrap();
+
+    if provider.is_some() {
+        wallet.set_provider(provider.unwrap());
+    }
+
+    wallet
 }

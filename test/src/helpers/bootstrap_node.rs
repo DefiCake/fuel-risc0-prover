@@ -58,7 +58,7 @@ pub async fn bootstrap1() -> anyhow::Result<(FuelService, Provider)> {
         }
     ).collect();
 
-    let fuel_service_config = FuelServiceConfig {
+    let mut fuel_service_config = FuelServiceConfig {
       chain_conf: ChainConfig {
         initial_state: Some(StateConfig {
           coins: Some(coins),
@@ -70,6 +70,7 @@ pub async fn bootstrap1() -> anyhow::Result<(FuelService, Provider)> {
       block_production: Trigger::Interval { block_time: Duration::from_secs(1) },
       ..FuelServiceConfig::local_node()
     };
+    fuel_service_config.txpool.min_gas_price = 1;
   
     let database = Database::in_memory();
   

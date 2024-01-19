@@ -7,20 +7,20 @@ use std::sync::Arc;
 
 use fuel_core_chain_config::ChainConfig;
 
-// pub use fuel_core::database::Database;
+// use fuel_core::{database::Database, service::{Config as FuelServiceConfig, config::Trigger, genesis::maybe_initialize_state}};
 pub use database::Database;
 
 use fuel_core_types::{
     blockchain::{primitives::DaBlockHeight, header::PartialBlockHeader}, 
     entities::message::Message,
-    blockchain::block::Block, services::{executor::ExecutionTypes, p2p::Transactions}
+    blockchain::block::Block, services::{executor::ExecutionTypes, p2p::Transactions, block_producer::Components}
 };
 
 use fuel_types::{Nonce, Bytes32};
 use genesis::initialize_state;
 use serde::{Deserialize, Serialize};
 
-use fuel_core_executor::{executor::{Executor, ExecutionOptions}, ports::RelayerPort};
+use fuel_core_executor::{executor::{Executor, ExecutionOptions, OnceTransactionsSource}, ports::RelayerPort};
 
 #[derive(Clone)]
 pub struct MockRelayer {
@@ -61,12 +61,6 @@ pub fn check_transition(
     database.init(&config).expect("database.init() failed");
     initialize_state(&config, &database, &initial_block).expect("Failed to initialize state");
 
-    // Core of the issue is state_root() is different when initializing the state
-    // let contract_id = fuel_types::ContractId::from_str("0xa270d51d7bc2ea9adb9fdf341e029564805ba76b373abfa98c83100467eed321").unwrap();
-    // let mut contract_ref = fuel_core_executor::refs::ContractRef::new(database.clone(), contract_id);
-    // dbg!(contract_ref.balance_root().unwrap());
-    // // dbg!(database.get_contract_config_by_id(contract_id).unwrap().state);
-
     let relayer: MockRelayer = MockRelayer { database: database.clone() };
 
     let executor: Executor<MockRelayer, Database> = Executor {
@@ -74,9 +68,6 @@ pub fn check_transition(
         database: database.clone(),
         config: Arc::new(Default::default()),
     };
-
-    // let core_initial_block = database.get_current_block().unwrap().unwrap();
-    // dbg!(core_initial_block);
 
     let block: Block<Bytes32> = 
         serde_json::from_str(target_block_json)
@@ -96,22 +87,19 @@ pub fn check_transition(
     def.consensus.time = time;
     def.consensus.height = height;
 
-    
+
     // ////////////////////////////////////
     // EXECUTION MODE: VALIDATION
     // ///////////////////////////////////
 
-    let test: ExecutionTypes<fuel_core_types::blockchain::block::PartialFuelBlock, Block> = ExecutionTypes::Validation(
+    let block: ExecutionTypes<Components<OnceTransactionsSource>, Block> = ExecutionTypes::Validation(
         Block::try_from_executed(block.header().clone(), transactions.clone().0).unwrap()
     );
-
-    // dbg!(test_block.compress(&executor.config.consensus_parameters.chain_id));
-    // dbg!(test_block);
     
-    let execution_result = executor.execute_and_commit(
-        test, 
-        ExecutionOptions{ utxo_validation: false}
-    ).expect("Could not get execution result");
+    let execution_result = executor.execute_without_commit(
+        block, 
+        ExecutionOptions{ utxo_validation: true}
+    ).expect("Could not get execution result").into_result();
 
     // ////////////////////////////////////
     // END EXECUTION MODE: VALIDATION

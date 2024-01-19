@@ -8,9 +8,8 @@ pub async fn send_funds(
     to: Option<WalletUnlocked>,
     commit: bool,
 ) -> anyhow::Result<Bytes32> {
-    let mut alice = from.unwrap_or(get_wallet_by_name(AccountName::Alice));
-    alice.set_provider(provider.clone());
-    let bob = to.unwrap_or(get_wallet_by_name(AccountName::Bob));
+    let alice = from.unwrap_or(get_wallet_by_name(AccountName::Alice, Some(provider.clone())));
+    let bob = to.unwrap_or(get_wallet_by_name(AccountName::Bob, None));
 
     let amount = 100u64;
     let asset_id = Default::default();

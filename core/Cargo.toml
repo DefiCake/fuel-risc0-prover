@@ -8,6 +8,7 @@ anyhow = { workspace = true }
 bech32 = { workspace = true }
 derive_more = { workspace = true }
 enum-iterator = { workspace = true }
+# fuel-core = { workspace = true }
 fuel-core-chain-config = { workspace = true, default-features = false, features = ["risc0"] }
 fuel-core-database = { workspace = true }
 fuel-core-executor = { workspace = true, features = ["test-helpers"] }
