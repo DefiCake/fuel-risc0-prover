@@ -1,4 +1,5 @@
-use crate::database::{Database, ExecutorDatabase};
+// use crate::database::{Database, ExecutorDatabase};
+use fuel_core::database::Database;
 use anyhow::anyhow;
 use fuel_core_chain_config::{
     ContractConfig,
@@ -13,8 +14,9 @@ use fuel_core_storage::{
         ContractsLatestUtxo,
         ContractsRawCode,
         FuelBlocks,
-        Messages,
+        Messages, SealedBlockConsensus,
     },
+    Result as StorageResult,
     transactional::Transactional,
     MerkleRoot,
     StorageAsMut,
@@ -28,7 +30,7 @@ use fuel_core_types::{
             ConsensusHeader,
             PartialBlockHeader,
         },
-        primitives::Empty, SealedBlock,
+        primitives::{Empty, BlockId}, SealedBlock,
     },
     entities::{
         coins::coin::CompressedCoin,
@@ -384,4 +386,28 @@ fn init_contract_balance(
         db.init_contract_balances(contract_id, balances.clone().into_iter())?;
     }
     Ok(())
+}
+
+
+/// The port for returned database from the executor.
+pub trait ExecutorDatabase {
+    /// Assigns the `Consensus` data to the block under the `block_id`.
+    /// Return the previous value at the `height`, if any.
+    fn seal_block(
+        &mut self,
+        block_id: &BlockId,
+        consensus: &Consensus,
+    ) -> StorageResult<Option<Consensus>>;
+}
+
+impl ExecutorDatabase for Database {
+    fn seal_block(
+        &mut self,
+        block_id: &BlockId,
+        consensus: &Consensus,
+    ) -> StorageResult<Option<Consensus>> {
+        self.storage::<SealedBlockConsensus>()
+            .insert(block_id, consensus)
+            .map_err(Into::into)
+    }
 }
