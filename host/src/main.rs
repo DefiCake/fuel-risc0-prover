@@ -39,6 +39,7 @@ fn main() -> Result<()> {
         chain_config: String::from(include_str!("../../test/res/test_snapshot.json")),
         target_block: String::from(include_str!("../../test/res/test_target_block.json")),
         transactions_json: String::from(include_str!("../../test/res/test_transaction.json")),
+        initial_block_json: String::from(""), // TODO
     };
 
     let env = 
@@ -52,7 +53,7 @@ fn main() -> Result<()> {
     let prover = default_prover();
 
     // Produce a receipt by proving the specified ELF binary.
-    let receipt = prover.prove_elf(env, PROVER_ELF).unwrap();
+    let receipt = prover.prove(env, PROVER_ELF).unwrap();
 
     // Optional: Verify receipt to confirm that recipients will also be able to
     // verify your receipt

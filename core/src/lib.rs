@@ -92,9 +92,13 @@ pub fn check_transition(
     // EXECUTION MODE: VALIDATION
     // ///////////////////////////////////
 
-    let block: ExecutionTypes<Components<OnceTransactionsSource>, Block> = ExecutionTypes::Validation(
-        Block::try_from_executed(block.header().clone(), transactions.clone().0).unwrap()
-    );
+    let block: ExecutionTypes<Components<OnceTransactionsSource>, Block> 
+        = ExecutionTypes::Validation(
+            Block::try_from_executed(
+                block.header().clone(), 
+                transactions.clone().0
+            ).unwrap()
+        );
     
     let execution_result = executor.execute_without_commit(
         block, 

@@ -1,12 +1,10 @@
 .PHONY: start start-relay node-hardhat node node-docker build test dev
 
-# RISC0_BUILD_DEBUG=1 is a temporary workaround until https://github.com/risc0/risc0/pull/1257
-# ETA for this fix: v0.20.0-rc2
-# Meanwhile, build times will skyrocket
+# Use RISC0_DEV_MODE=1 RUST_LOG="executor=info" for metrics and benchmarking
 start:
-	RISC0_BUILD_DEBUG=1 RISC0_DEV_MODE=1 RUST_LOG="executor=info" cargo run --release
+	cargo run --release
 start-relay:
-	RISC0_DEV_MODE=1 RUST_LOG="executor=info" cargo run --bin relay
+	cargo run --bin relay
 node-hardhat:
 	docker-compose up hardhat
 node:

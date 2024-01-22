@@ -6,6 +6,11 @@ pub fn snapshot(fuel_service: &FuelService) -> anyhow::Result<ChainConfig> {
 
     let state_conf = StateConfig::generate_state_config(fuel_service.shared.database.clone())?;
 
+    // tx_pointer acts as a replay protection measure
+    // so if we want to snapshot a node and make it resemble as close as possible the original
+    // state that we are snapshotting (so that we later validate a block transition)
+    // then we must disable the by-default behaviour of generate_state_config, which
+    // saves this info so that forks started from a snapshot do not get replay-attacked.
     let coins: Vec<CoinConfig> = state_conf.clone().coins.unwrap().iter().map(|coin| {
         CoinConfig {
             tx_pointer_block_height: None,
