@@ -19,16 +19,16 @@ derive_more = { version = "0.99" }
 enum-iterator = "1.2"
 ethers = {version = "=2.0.8"}
 ethabi = "18.0.0"
-fuel-core = { git = "https://github.com/DefiCake/fuel-core", rev="88ede4261047d771b279665dde3811adb09f8bcf", default-features = false }
-fuel-core-chain-config = { git = "https://github.com/DefiCake/fuel-core", rev="88ede4261047d771b279665dde3811adb09f8bcf", default-features = false }
-fuel-core-database = { git = "https://github.com/DefiCake/fuel-core", rev="88ede4261047d771b279665dde3811adb09f8bcf", default-features = false }
-fuel-core-executor = { git = "https://github.com/DefiCake/fuel-core", rev="88ede4261047d771b279665dde3811adb09f8bcf", default-features = false }
-fuel-core-importer = { git = "https://github.com/DefiCake/fuel-core", rev="88ede4261047d771b279665dde3811adb09f8bcf", default-features = false }
-fuel-core-poa = { git = "https://github.com/DefiCake/fuel-core", rev="88ede4261047d771b279665dde3811adb09f8bcf", default-features = false }
-fuel-core-services = { git = "https://github.com/DefiCake/fuel-core", rev="88ede4261047d771b279665dde3811adb09f8bcf", default-features = false }
-fuel-core-storage = { git = "https://github.com/DefiCake/fuel-core", rev="88ede4261047d771b279665dde3811adb09f8bcf", default-features = false }
-fuel-core-types = { git = "https://github.com/DefiCake/fuel-core", rev="88ede4261047d771b279665dde3811adb09f8bcf", default-features = false }
-fuel-core-txpool = { git = "https://github.com/DefiCake/fuel-core", rev="88ede4261047d771b279665dde3811adb09f8bcf", default-features = false }
+fuel-core = { version = "0.22.0", default-features = false }
+fuel-core-chain-config = { version = "0.22.0", default-features = false }
+fuel-core-database = { version = "0.22.0", default-features = false }
+fuel-core-executor = { version = "0.22.0", default-features = false }
+fuel-core-importer = { version = "0.22.0", default-features = false }
+fuel-core-poa = { version = "0.22.0", default-features = false }
+fuel-core-services = { version = "0.22.0", default-features = false }
+fuel-core-storage = { version = "0.22.0", default-features = false }
+fuel-core-types = { version = "0.22.0", default-features = false }
+fuel-core-txpool = { version = "0.22.0", default-features = false }
 fuel-crypto = { version = "0.43.1",  default-features = false}
 fuel-storage = { version = "0.43.1",  default-features = false}
 fuel-tx = { version = "0.43.1", default-features = false, features = ["builder"]}
@@ -53,11 +53,25 @@ thiserror = "1.0"
 tokio = { version = "1.19", features = ["full", "sync"] }
 
 [patch.crates-io]
-fuel-crypto = { git = "https://github.com/DefiCake/fuel-vm", rev = "917ea7c38e5dc34e735295a7e47af3308011be26" }
-fuel-storage = { git = "https://github.com/DefiCake/fuel-vm", rev = "917ea7c38e5dc34e735295a7e47af3308011be26" }
-fuel-tx = { git = "https://github.com/DefiCake/fuel-vm", rev = "917ea7c38e5dc34e735295a7e47af3308011be26" }
-fuel-types = { git = "https://github.com/DefiCake/fuel-vm", rev = "917ea7c38e5dc34e735295a7e47af3308011be26" }
-fuel-vm = { git = "https://github.com/DefiCake/fuel-vm", rev = "917ea7c38e5dc34e735295a7e47af3308011be26" }
+
+# Fuel core patches
+fuel-core = { git = "https://github.com/FuelLabs/fuel-core", rev="88ede4261047d771b279665dde3811adb09f8bcf" }
+fuel-core-chain-config = { git = "https://github.com/FuelLabs/fuel-core", rev="88ede4261047d771b279665dde3811adb09f8bcf" }
+fuel-core-database = { git = "https://github.com/FuelLabs/fuel-core", rev="88ede4261047d771b279665dde3811adb09f8bcf" }
+fuel-core-executor = { git = "https://github.com/FuelLabs/fuel-core", rev="88ede4261047d771b279665dde3811adb09f8bcf" }
+fuel-core-importer = { git = "https://github.com/FuelLabs/fuel-core", rev="88ede4261047d771b279665dde3811adb09f8bcf" }
+fuel-core-poa = { git = "https://github.com/FuelLabs/fuel-core", rev="88ede4261047d771b279665dde3811adb09f8bcf" }
+fuel-core-services = { git = "https://github.com/FuelLabs/fuel-core", rev="88ede4261047d771b279665dde3811adb09f8bcf" }
+fuel-core-storage = { git = "https://github.com/FuelLabs/fuel-core", rev="88ede4261047d771b279665dde3811adb09f8bcf" }
+fuel-core-types = { git = "https://github.com/FuelLabs/fuel-core", rev="88ede4261047d771b279665dde3811adb09f8bcf" }
+fuel-core-txpool = { git = "https://github.com/FuelLabs/fuel-core", rev="88ede4261047d771b279665dde3811adb09f8bcf" }
+
+# Fuel VM patches
+fuel-crypto = { git = "https://github.com/FuelLabs/fuel-vm", rev = "917ea7c38e5dc34e735295a7e47af3308011be26" }
+fuel-storage = { git = "https://github.com/FuelLabs/fuel-vm", rev = "917ea7c38e5dc34e735295a7e47af3308011be26" }
+fuel-tx = { git = "https://github.com/FuelLabs/fuel-vm", rev = "917ea7c38e5dc34e735295a7e47af3308011be26" }
+fuel-types = { git = "https://github.com/FuelLabs/fuel-vm", rev = "917ea7c38e5dc34e735295a7e47af3308011be26" }
+fuel-vm = { git = "https://github.com/FuelLabs/fuel-vm", rev = "917ea7c38e5dc34e735295a7e47af3308011be26" }
 
 # Always optimize; building and running the guest takes much longer without optimization.
 [profile.dev]
